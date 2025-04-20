@@ -1,7 +1,4 @@
 import java.util.ArrayList;
-import java.util.Objects;
-
-import static java.lang.System.exit;
 
 public class Partiedejeu {
     private ArrayList<Joueur> joueursDelaPartie = new ArrayList<>();
@@ -11,6 +8,9 @@ public class Partiedejeu {
     private Defausse tas;
     private boolean tourCourant ;
     private boolean aFaitUneAction;
+    private boolean controleDeCartePasseTT;
+    private boolean effetPlus2;
+    private int compteurCarteSpe;
 
     public Partiedejeu(ArrayList<Joueur> joueursDelaPartie, boolean sensHoraire, int indiceDuJoueurCourant, Pioche pioche, Defausse tas) {
         this.joueursDelaPartie = joueursDelaPartie;
@@ -46,15 +46,36 @@ public class Partiedejeu {
         }
         Joueur j = joueurCourant();
         Carte carteJeu = tas.carteAJouer();
+        if (effetPlus2 ){
+            if (j.aLaCarte(c) && c.getValeur()== Carte.eValeur.PLUS_2){
+                compteurCarteSpe++;
+                effetPlus2 = false;
+            }else {
+                encaisserAttaque();
+                throw new PartieException("Vous ne pouvez pas jouer; vous avez subi une attaque 2 carte de la pioche en etaient ajoutees ");
+            }
+        }
         if (j.aLaCarte(c)) {
             if ((c.getValeur() == carteJeu.getValeur()) || (c.getCouleur() == (carteJeu.getCouleur()))) {
                 j.jouerCarte(c);
                 tas.poserUneCarte(c);
                 aFaitUneAction = true;
                 tourCourant = false;
-            } else {
+            }else {
+                if (carteJeu.getValeur() == Carte.eValeur.PASSE){
+                    aFaitUneAction = true;
+                    tourCourant = false;
+                    controleDeCartePasseTT = true;
+                   // tas.poserUneCarte(c);
+                }else if (c.getValeur() == Carte.eValeur.PASSE){
+                    aFaitUneAction = true;
+                    tourCourant = false;
+                    controleDeCartePasseTT = true;
+                }
+                else{
                 punir(joueurCourant());
                 throw new IllegalArgumentException("Tu ne peux pas jouer cette carte");
+            }
             }
         }else {
             throw new PartieException("vous ne possedez pa cette carte");
@@ -70,23 +91,36 @@ public class Partiedejeu {
         }
     }
     public void finirTourDe (Joueur joueur){
+        Carte c = tas.carteAJouer();
         if (joueur != joueurCourant()) {
             throw new PartieException("Ce n'est pas à vous de finir le tour !");
         } else if (!aFaitUneAction) {
             throw new PartieException("Vous devez jouer Une carte si vous n'avez pas de carte piochezz");
+        } else if (effetPlus2) {
+                encaisserAttaque();
+            throw new PartieException("Ta encaisser L'attaque +2");
         }
         if (joueur.getNbCarteEnMain() == 1 && joueur.isaDitUno()==false) {
             punir(joueur);
-            Carte c = tas.carteAJouer();
             joueur.ajouterUneCarte(c);
             tas.rendreLaCarte();
             throw new UnoException("a oublier de dire UNO");
         }else if (joueur.getNbCarteEnMain() == 1 && joueur.isaDitUno()==true){
             joueur.setaDitUno(true);
-        }else{
+        }/*else{
             throw new UnoException("il vous reste plus d'une carte");
+        }*/
+        if (controleDeCartePasseTT){
+            passeTour();
+            throw new PartieException("pas le droit de jouer cette carte vous ne serez pas penaliser,mais votre tour est fini");
+        }
+        if (c.getValeur() == Carte.eValeur.PLUS_2){
+            effetPlus2 = true;
         }
         passeTour();
+        if (c.getValeur()== Carte.eValeur.PASSE){
+            passeTour();
+        }
 
     }
     private Carte ajouterLaCartePioche(Joueur joueur){
@@ -96,13 +130,20 @@ public class Partiedejeu {
     }
 
     public Carte piocherUneCarte(Joueur joueur) {
+        Joueur j = joueurCourant();
+        if (effetPlus2){
+            ajouterLaCartePioche(j);
+            ajouterLaCartePioche(j);
+            effetPlus2 = false;
+            passeTour();
+        }
        if (tourCourant == false ||!joueur.equals(joueurCourant())){
            ajouterLaCartePioche(joueur);
            ajouterLaCartePioche(joueur);
            throw new PiocheException("Vous ne pouvez pas piocher ce n'est pas votre tour ");
        }
-        Carte c = pioche.depiler();
-       Joueur j = joueurCourant();
+       Carte c = pioche.getCarteAPiocher();
+               pioche.depiler();
        j.ajouterUneCarte(c);
        aFaitUneAction = true;
        return c;
@@ -116,6 +157,26 @@ public class Partiedejeu {
             j.setaDitUno(false);
             throw new UnoException("Ce n'est pas votre tour vous ne pouvez pas dire UNO");
         }
+    }
+     public void encaisserAttaque(){
+         if (effetPlus2) {
+             Joueur joueur = joueurCourant();
+             if (compteurCarteSpe == 1){
+                 for (int i = 0; i < 4; i++) {
+                     Carte carte = pioche.getCarteAPiocher();
+                     pioche.depiler();
+                     joueur.ajouterUneCarte(carte);
+                 }
+             }else {
+                 for (int i = 0; i < 2; i++) {
+                     Carte carte = pioche.getCarteAPiocher();
+                     pioche.depiler();
+                     joueur.ajouterUneCarte(carte);
+                 }
+             }
+             effetPlus2 = false;
+             passeTour();
+         }
     }
 
 }
