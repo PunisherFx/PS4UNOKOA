@@ -1,3 +1,7 @@
+package LogiqueDeJeu;
+
+import Exceptions.PiocheException;
+
 import java.util.ArrayList;
 
 public class Pioche {

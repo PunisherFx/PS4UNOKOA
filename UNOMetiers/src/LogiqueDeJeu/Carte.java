@@ -1,3 +1,5 @@
+package LogiqueDeJeu;
+
 import java.util.Objects;
 
 public class Carte {

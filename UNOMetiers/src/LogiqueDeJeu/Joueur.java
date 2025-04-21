@@ -1,3 +1,5 @@
+package LogiqueDeJeu;
+
 import java.util.ArrayList;
 import java.util.Objects;
 

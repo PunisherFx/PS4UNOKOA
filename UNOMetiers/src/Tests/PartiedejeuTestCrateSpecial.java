@@ -1,10 +1,15 @@
+package Tests;
+import static org.junit.jupiter.api.Assertions.*;
+
+import Exceptions.*;
+import LogiqueDeJeu.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 class PartiedejeuTestCrateSpecial {
     private static Pioche pioche;
@@ -56,45 +61,45 @@ class PartiedejeuTestCrateSpecial {
     }
     @Test
     public void testDeCoupsLegauxAvecDesCartes () {
-        assertEquals(alice, partie.joueurCourant());
+        Assertions.assertEquals(alice, partie.joueurCourant());
         Carte passeTTRouge = new Carte(Carte.eValeur.PASSE, Carte.eCouleur.ROUGE);
         partie.jouer(passeTTRouge);
         partie.finirTourDe(alice);
-        assertEquals(charles, partie.joueurCourant());
+        Assertions.assertEquals(charles, partie.joueurCourant());
         assertEquals(passeTTRouge, defausse.carteAJouer());
 
         Carte passeTTVert = new Carte(Carte.eValeur.PASSE, Carte.eCouleur.VERT);
         partie.jouer(passeTTVert);
         partie.finirTourDe(charles);
-        assertEquals(bob, partie.joueurCourant());
+        Assertions.assertEquals(bob, partie.joueurCourant());
         assertEquals(passeTTVert, defausse.carteAJouer());
 
-        Carte sixVert = new Carte(Carte.eValeur.SIX,Carte.eCouleur.VERT);
+        Carte sixVert = new Carte(Carte.eValeur.SIX, Carte.eCouleur.VERT);
         partie.jouer(sixVert);
         partie.finirTourDe(bob);
-        assertEquals(charles, partie.joueurCourant());
+        Assertions.assertEquals(charles, partie.joueurCourant());
         assertEquals(sixVert, defausse.carteAJouer());
 
     }
     @Test
     public void testDuneCarteSimpleIllegalSurUnPassTT(){
-        assertEquals(alice, partie.joueurCourant());
+        Assertions.assertEquals(alice, partie.joueurCourant());
         Carte passeTTRouge = new Carte(Carte.eValeur.PASSE, Carte.eCouleur.ROUGE);
         partie.jouer(passeTTRouge);
         partie.finirTourDe(alice);
 
-        assertEquals(charles, partie.joueurCourant());
-        assertEquals(3,charles.getNbCarteEnMain());
+        Assertions.assertEquals(charles, partie.joueurCourant());
+        Assertions.assertEquals(3,charles.getNbCarteEnMain());
         Carte unBleu = new Carte(Carte.eValeur.UN, Carte.eCouleur.BLEU);
         partie.jouer(unBleu);
         //partie.finirTourDe(charles);
         assertThrows(PartieException.class, () -> partie.finirTourDe(charles));
-        assertEquals(3, charles.getNbCarteEnMain());
+        Assertions.assertEquals(3, charles.getNbCarteEnMain());
     }
 
     @Test
     public void testDunPasseTonTourIllegalSurUneCarteSimple (){
-        assertEquals(alice, partie.joueurCourant());
+        Assertions.assertEquals(alice, partie.joueurCourant());
         Carte neufBleu = new Carte(Carte.eValeur.NEUF, Carte.eCouleur.BLEU);
         partie.jouer(neufBleu);
         partie.finirTourDe(alice);
@@ -103,12 +108,12 @@ class PartiedejeuTestCrateSpecial {
         partie.jouer(septBleu);
         partie.finirTourDe(bob);
 
-        assertEquals(charles, partie.joueurCourant());
-        assertEquals(3,charles.getNbCarteEnMain());
+        Assertions.assertEquals(charles, partie.joueurCourant());
+        Assertions.assertEquals(3,charles.getNbCarteEnMain());
 
         Carte passeTTVert = new Carte(Carte.eValeur.PASSE, Carte.eCouleur.VERT);
         partie.jouer(passeTTVert);
         assertThrows(PartieException.class, () ->  partie.finirTourDe(charles));
-        assertEquals(3, charles.getNbCarteEnMain());
+        Assertions.assertEquals(3, charles.getNbCarteEnMain());
     }
 }

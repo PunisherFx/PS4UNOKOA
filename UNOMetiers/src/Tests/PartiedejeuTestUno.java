@@ -1,10 +1,16 @@
+package Tests;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import Exceptions.*;
+import LogiqueDeJeu.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 class PartiedejeuTestUno {
     private static Pioche pioche;
@@ -53,7 +59,7 @@ class PartiedejeuTestUno {
 }
     @Test
     public void testAliceDitUnoAuBonMoment(){
-     assertEquals(2,alice.getNbCarteEnMain());
+     Assertions.assertEquals(2,alice.getNbCarteEnMain());
      Carte deuxVert = new Carte(Carte.eValeur.DEUX, Carte.eCouleur.VERT);
      partie.jouer(deuxVert);
      alice.DireUno(partie);
@@ -66,7 +72,7 @@ class PartiedejeuTestUno {
         Carte deuxVert = new Carte(Carte.eValeur.DEUX, Carte.eCouleur.VERT);
         partie.jouer(deuxVert);
         assertThrows(UnoException.class, () -> partie.finirTourDe(alice));
-        assertEquals(4,alice.getNbCarteEnMain());
+        Assertions.assertEquals(4,alice.getNbCarteEnMain());
         Carte huitVert = new Carte(Carte.eValeur.HUIT, Carte.eCouleur.VERT);
         assertEquals(huitVert,defausse.carteAJouer());
         assertEquals(bob,partie.joueurCourant());
@@ -75,7 +81,7 @@ class PartiedejeuTestUno {
     public void direUnoLorsqueCeNestPasSonTour (){
         assertEquals(alice,partie.joueurCourant());
         assertThrows(UnoException.class, () -> bob.DireUno(partie));
-        assertEquals(4,bob.getNbCarteEnMain());
+        Assertions.assertEquals(4,bob.getNbCarteEnMain());
         assertEquals(alice,partie.joueurCourant());
         Carte huitVert = new Carte(Carte.eValeur.HUIT, Carte.eCouleur.VERT);
         assertEquals(huitVert,defausse.carteAJouer());

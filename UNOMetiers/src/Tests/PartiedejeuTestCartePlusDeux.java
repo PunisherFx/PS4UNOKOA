@@ -1,10 +1,16 @@
+package Tests;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import Exceptions.*;
+import LogiqueDeJeu.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 class PartiedejeuTestCartePlusDeux {
     private static Pioche pioche;
@@ -60,39 +66,39 @@ class PartiedejeuTestCartePlusDeux {
     }
 @Test
 public void testDunCoupeLegaleAvecUneCartePlusDEUX() {
-    assertEquals(alice,partie.joueurCourant());
+    Assertions.assertEquals(alice,partie.joueurCourant());
     Carte plus2Vert = new Carte(Carte.eValeur.PLUS_2, Carte.eCouleur.VERT);
     partie.jouer(plus2Vert);
     partie.finirTourDe(alice);
-    assertEquals(bob,partie.joueurCourant());
-    assertEquals(3,bob.getNbCarteEnMain());
+    Assertions.assertEquals(bob,partie.joueurCourant());
+    Assertions.assertEquals(3,bob.getNbCarteEnMain());
     partie.encaisserAttaque();
-    assertEquals(5,bob.getNbCarteEnMain());
-    assertEquals(charles,partie.joueurCourant());
+    Assertions.assertEquals(5,bob.getNbCarteEnMain());
+    Assertions.assertEquals(charles,partie.joueurCourant());
     Carte unVert = new Carte(Carte.eValeur.UN, Carte.eCouleur.VERT);
     partie.jouer(unVert);
     partie.finirTourDe(charles);
-    assertEquals(2,charles.getNbCarteEnMain());
+    Assertions.assertEquals(2,charles.getNbCarteEnMain());
     }
 @Test
 public void testDunCoupLegalavecCumuldeCartesPlus2 (){
-        assertEquals(alice,partie.joueurCourant());
+        Assertions.assertEquals(alice,partie.joueurCourant());
         partie.piocherUneCarte(alice);
-        assertEquals(4,alice.getNbCarteEnMain());
+        Assertions.assertEquals(4,alice.getNbCarteEnMain());
         partie.finirTourDe(alice);
-        assertEquals(bob,partie.joueurCourant());
+        Assertions.assertEquals(bob,partie.joueurCourant());
         partie.piocherUneCarte(bob);
         partie.finirTourDe(bob);
-        assertEquals(charles,partie.joueurCourant());
+        Assertions.assertEquals(charles,partie.joueurCourant());
         Carte plus2Vert = new Carte(Carte.eValeur.PLUS_2, Carte.eCouleur.VERT);
         partie.jouer(plus2Vert);
         partie.finirTourDe(charles);
-        assertEquals(alice,partie.joueurCourant());
+        Assertions.assertEquals(alice,partie.joueurCourant());
         partie.jouer(plus2Vert);
         partie.finirTourDe(alice);
-        assertEquals(bob,partie.joueurCourant());
-        assertEquals(4,bob.getNbCarteEnMain());
+        Assertions.assertEquals(bob,partie.joueurCourant());
+        Assertions.assertEquals(4,bob.getNbCarteEnMain());
         partie.encaisserAttaque();
-        assertEquals(8,bob.getNbCarteEnMain());
+        Assertions.assertEquals(8,bob.getNbCarteEnMain());
 }
 }

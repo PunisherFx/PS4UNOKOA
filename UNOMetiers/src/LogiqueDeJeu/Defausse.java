@@ -1,4 +1,5 @@
-import java.util.ArrayList;
+package LogiqueDeJeu;
+
 import java.util.List;
 
 public class Defausse {

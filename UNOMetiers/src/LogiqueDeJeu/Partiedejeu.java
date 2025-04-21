@@ -1,3 +1,9 @@
+package LogiqueDeJeu;
+
+import Exceptions.PartieException;
+import Exceptions.PiocheException;
+import Exceptions.UnoException;
+
 import java.util.ArrayList;
 
 public class Partiedejeu {
