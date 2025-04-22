@@ -61,17 +61,17 @@ class PartiedejeuTestCrateSpecial {
     }
     @Test
     public void testDeCoupsLegauxAvecDesCartes () {
-        Assertions.assertEquals(alice, partie.joueurCourant());
+        assertEquals(alice, partie.joueurCourant());
         Carte passeTTRouge = new Carte(Carte.eValeur.PASSE, Carte.eCouleur.ROUGE);
         partie.jouer(passeTTRouge);
         partie.finirTourDe(alice);
-        Assertions.assertEquals(charles, partie.joueurCourant());
+        assertEquals(charles, partie.joueurCourant());
         assertEquals(passeTTRouge, defausse.carteAJouer());
 
         Carte passeTTVert = new Carte(Carte.eValeur.PASSE, Carte.eCouleur.VERT);
         partie.jouer(passeTTVert);
         partie.finirTourDe(charles);
-        Assertions.assertEquals(bob, partie.joueurCourant());
+        assertEquals(bob, partie.joueurCourant());
         assertEquals(passeTTVert, defausse.carteAJouer());
 
         Carte sixVert = new Carte(Carte.eValeur.SIX, Carte.eCouleur.VERT);

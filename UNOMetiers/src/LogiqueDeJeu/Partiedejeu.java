@@ -16,7 +16,8 @@ public class Partiedejeu {
     private boolean aFaitUneAction;
     private boolean controleDeCartePasseTT;
     private boolean effetPlus2;
-    private int compteurCarteSpe;
+    private boolean effetPlus4;
+    private int compteurCarteSpe = 1 ;
 
     public Partiedejeu(ArrayList<Joueur> joueursDelaPartie, boolean sensHoraire, int indiceDuJoueurCourant, Pioche pioche, Defausse tas) {
         this.joueursDelaPartie = joueursDelaPartie;
@@ -56,6 +57,15 @@ public class Partiedejeu {
             if (j.aLaCarte(c) && c.getValeur()== Carte.eValeur.PLUS_2){
                 compteurCarteSpe++;
                 effetPlus2 = false;
+            }else {
+                encaisserAttaque();
+                throw new PartieException("Vous ne pouvez pas jouer; vous avez subi une attaque 2 carte de la pioche en etaient ajoutees ");
+            }
+        }
+        if(effetPlus4){
+            if (j.aLaCarte(c) && c.getValeur()== Carte.eValeur.PLUS_4){
+                compteurCarteSpe++;
+                effetPlus4 = false;
             }else {
                 encaisserAttaque();
                 throw new PartieException("Vous ne pouvez pas jouer; vous avez subi une attaque 2 carte de la pioche en etaient ajoutees ");
@@ -105,6 +115,9 @@ public class Partiedejeu {
         } else if (effetPlus2) {
                 encaisserAttaque();
             throw new PartieException("Ta encaisser L'attaque +2");
+        } else if (effetPlus4) {
+        encaisserAttaque();
+        throw new PartieException("Ta encaisser L'attaque +4");
         }
         if (joueur.getNbCarteEnMain() == 1 && joueur.isaDitUno()==false) {
             punir(joueur);
@@ -122,6 +135,16 @@ public class Partiedejeu {
         }
         if (c.getValeur() == Carte.eValeur.PLUS_2){
             effetPlus2 = true;
+        }
+        if (c.getValeur() == Carte.eValeur.PLUS_4){
+            effetPlus4 = true;
+        }
+        if(c.getValeur()== Carte.eValeur.CHANGEMENT_SENS){
+            if (sensHoraire){
+                sensHoraire = false;
+            }else{
+                sensHoraire = true;
+            }
         }
         passeTour();
         if (c.getValeur()== Carte.eValeur.PASSE){
@@ -141,6 +164,14 @@ public class Partiedejeu {
             ajouterLaCartePioche(j);
             ajouterLaCartePioche(j);
             effetPlus2 = false;
+            passeTour();
+        }
+        if (effetPlus4){
+            ajouterLaCartePioche(j);
+            ajouterLaCartePioche(j);
+            ajouterLaCartePioche(j);
+            ajouterLaCartePioche(j);
+            effetPlus4 = false;
             passeTour();
         }
        if (tourCourant == false ||!joueur.equals(joueurCourant())){
@@ -164,25 +195,33 @@ public class Partiedejeu {
             throw new UnoException("Ce n'est pas votre tour vous ne pouvez pas dire UNO");
         }
     }
-     public void encaisserAttaque(){
+     public void encaisserAttaque() {
          if (effetPlus2) {
              Joueur joueur = joueurCourant();
-             if (compteurCarteSpe == 1){
-                 for (int i = 0; i < 4; i++) {
-                     Carte carte = pioche.getCarteAPiocher();
-                     pioche.depiler();
-                     joueur.ajouterUneCarte(carte);
-                 }
-             }else {
-                 for (int i = 0; i < 2; i++) {
-                     Carte carte = pioche.getCarteAPiocher();
-                     pioche.depiler();
-                     joueur.ajouterUneCarte(carte);
-                 }
+             int nb = compteurCarteSpe * 2;
+             for (int i = 0; i < nb; i++) {
+                 Carte carte = pioche.getCarteAPiocher();
+                 pioche.depiler();
+                 joueur.ajouterUneCarte(carte);
              }
+
              effetPlus2 = false;
              passeTour();
          }
-    }
 
-}
+         if (effetPlus4) {
+             Joueur joueur = joueurCourant();
+             int nb = compteurCarteSpe * 4;
+             for (int i = 0; i < nb; i++) {
+                 Carte carte = pioche.getCarteAPiocher();
+                 pioche.depiler();
+                 joueur.ajouterUneCarte(carte);
+             }
+
+             effetPlus4 = false;
+             passeTour();
+         }
+
+         }
+     }
+

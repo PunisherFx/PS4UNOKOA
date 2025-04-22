@@ -11,6 +11,9 @@ public class Pioche {
         LaPioche = laPioche;
     }
     public Carte getCarteAPiocher(){
+        if (LaPioche.isEmpty()) {
+            throw new PiocheException("La pioche est vide");
+        }
         return LaPioche.get(LaPioche.size()-1);
     }
     public Carte depiler(){
