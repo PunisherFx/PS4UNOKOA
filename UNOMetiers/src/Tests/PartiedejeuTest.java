@@ -97,7 +97,7 @@ public class PartiedejeuTest {
         Assertions.assertTrue(alice.aLaCarte(SixJaune));
         Assertions.assertEquals(alice, partie.joueurCourant());
         assertThrows(IllegalArgumentException.class, () -> partie.jouer(SixJaune));
-        Assertions.assertEquals(3, alice.getNbCarteEnMain());
+        Assertions.assertEquals(5, alice.getNbCarteEnMain());
         Assertions.assertTrue(alice.getCrtEnMain().contains(SixJaune));
     }
    @Test

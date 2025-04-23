@@ -78,7 +78,7 @@ class PartiedejeuTestCartePlusQuatre {
         Carte plus4Vert = new Carte(Carte.eValeur.PLUS_4, Carte.eCouleur.VERT);
         Carte Jaune6 = new Carte(Carte.eValeur.SIX, Carte.eCouleur.JAUNE);
         partie.jouer(plus4Vert);
-        partie.finirTourDe(alice);
+        alice.finirSonTour(partie);
         Assertions.assertEquals(bob,partie.joueurCourant());
         Assertions.assertEquals(3,bob.getNbCarteEnMain());
         assertThrows(PartieException.class ,() -> partie.jouer(Jaune6));

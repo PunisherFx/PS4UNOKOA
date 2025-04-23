@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class Carte {
 
-    public enum eValeur {ZERO, UN, DEUX, TROIS, QUATRE, CINQ, SIX, SEPT, HUIT, NEUF, PLUS_2, PLUS_4, PASSE, CHANGEMENT_SENS} ;
+    public enum eValeur {ZERO, UN, DEUX, TROIS, QUATRE, CINQ, SIX, SEPT, HUIT, NEUF, PLUS_2, PLUS_4, PASSE, CHANGEMENT_SENS,CHANGEMENT_COULEUR} ;
     public enum eCouleur {ROUGE, VERT, BLEU, JAUNE, NOIR};
 
     private eValeur valeur;

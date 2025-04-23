@@ -94,5 +94,9 @@ class PartiedejeuTestChangement {
         assertEquals(bob,partie.joueurCourant());
 
     }
+  /*  @Test
+    public void TestChangementdeCouleur(){
+
+    }*/
 
 }

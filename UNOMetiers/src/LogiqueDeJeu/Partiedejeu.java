@@ -46,6 +46,7 @@ public class Partiedejeu {
         }
 
         tourCourant = true;
+        aFaitUneAction = false;
     }
     public void jouer(Carte c) {
         if (tourCourant == false) {
@@ -126,9 +127,12 @@ public class Partiedejeu {
             throw new UnoException("a oublier de dire UNO");
         }else if (joueur.getNbCarteEnMain() == 1 && joueur.isaDitUno()==true){
             joueur.setaDitUno(true);
-        }/*else{
-            throw new UnoException("il vous reste plus d'une carte");
-        }*/
+        }else if (joueur.getNbCarteEnMain() > 1 && joueur.isaDitUno()==true){
+            punir(joueur);
+            joueur.ajouterUneCarte(c);
+            tas.rendreLaCarte();
+            throw new UnoException("c'est pas bien de mentir ; vous avez subi une punition +2 et votre carte n'est pas accepter");
+        }
         if (controleDeCartePasseTT){
             passeTour();
             throw new PartieException("pas le droit de jouer cette carte vous ne serez pas penaliser,mais votre tour est fini");
@@ -173,6 +177,11 @@ public class Partiedejeu {
             ajouterLaCartePioche(j);
             effetPlus4 = false;
             passeTour();
+        }
+        if (aFaitUneAction){
+            Carte c = tas.carteAJouer();
+            tas.rendreLaCarte();
+            throw new PiocheException("Vous ne pouvez pas piocher vous avez deja jouer  ");
         }
        if (tourCourant == false ||!joueur.equals(joueurCourant())){
            ajouterLaCartePioche(joueur);
