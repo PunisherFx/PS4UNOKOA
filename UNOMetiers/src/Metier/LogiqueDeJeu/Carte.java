@@ -1,4 +1,4 @@
-package LogiqueDeJeu;
+package Metier.LogiqueDeJeu;
 
 import java.util.Objects;
 

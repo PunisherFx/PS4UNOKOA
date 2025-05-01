@@ -1,8 +1,8 @@
-package LogiqueDeJeu;
+package Metier.LogiqueDeJeu;
 
-import Exceptions.PartieException;
-import Exceptions.PiocheException;
-import Exceptions.UnoException;
+import Metier.Exceptions.PartieException;
+import Metier.Exceptions.PiocheException;
+import Metier.Exceptions.UnoException;
 
 import java.util.ArrayList;
 

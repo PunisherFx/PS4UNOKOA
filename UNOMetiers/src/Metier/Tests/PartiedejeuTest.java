@@ -1,9 +1,11 @@
-package Tests;
+package Metier.Tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import Exceptions.*;
-import LogiqueDeJeu.*;
+import Metier.Exceptions.PartieException;
+import Metier.Exceptions.PiocheException;
+import Metier.LogiqueDeJeu.*;
+import Metier.LogiqueDeJeu.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

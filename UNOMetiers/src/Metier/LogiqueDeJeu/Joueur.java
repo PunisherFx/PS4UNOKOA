@@ -1,9 +1,8 @@
-package LogiqueDeJeu;
+package Metier.LogiqueDeJeu;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.Scanner;
-/*Dans cette classe on fait pas test ni de verification (elles sont faites dans la classe Partie)
+/*Dans cette classe on fait pas de test ni de verification (elles sont faites dans la classe Partie)
 cette classe elle est simple on gere le nom du joeurs les cartes (donc ajouter une carte et retirer une carte de sa main)
 on peut dire aussi Uno
  */

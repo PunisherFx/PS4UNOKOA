@@ -1,8 +1,8 @@
-package Tests;
+package Metier.Tests;
 
-import Exceptions.PartieException;
-import Exceptions.UnoException;
-import LogiqueDeJeu.*;
+import Metier.Exceptions.UnoException;
+import Metier.LogiqueDeJeu.*;
+import Metier.LogiqueDeJeu.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +11,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PartiedejeuTestChangement {
+class PartiedejeuTestAutreTest {
     private static Pioche pioche;
     private static Defausse defausse;
     private static Joueur alice;
@@ -32,21 +32,21 @@ class PartiedejeuTestChangement {
         joueurs.add(charles);
         alice.initialiserMain(new ArrayList<>(List.of(
                 new Carte(Carte.eValeur.CHANGEMENT_SENS, Carte.eCouleur.VERT),
-                new Carte(Carte.eValeur.NEUF, Carte.eCouleur.VERT),
-                new Carte(Carte.eValeur.QUATRE, Carte.eCouleur.JAUNE)
+                new Carte(Carte.eValeur.PASSE, Carte.eCouleur.VERT),
+                new Carte(Carte.eValeur.PLUS_2, Carte.eCouleur.JAUNE)
 
         )));
 
         bob.initialiserMain(new ArrayList<>(List.of(
                 new Carte(Carte.eValeur.SIX, Carte.eCouleur.VERT),
                 new Carte(Carte.eValeur.CHANGEMENT_SENS, Carte.eCouleur.JAUNE),
-                new Carte(Carte.eValeur.SEPT, Carte.eCouleur.BLEU)
+                new Carte(Carte.eValeur.PLUS_4, Carte.eCouleur.VERT)
         )));
 
         charles.initialiserMain(new ArrayList<>(List.of(
                 new Carte(Carte.eValeur.UN, Carte.eCouleur.BLEU),
                 new Carte(Carte.eValeur.CHANGEMENT_SENS, Carte.eCouleur.VERT),
-                new Carte(Carte.eValeur.UN, Carte.eCouleur.VERT)
+                new Carte(Carte.eValeur.PLUS_4, Carte.eCouleur.VERT)
         )));
         pioche = new Pioche(new ArrayList<>(List.of(
                 new Carte(Carte.eValeur.UN, Carte.eCouleur.BLEU),
@@ -72,31 +72,29 @@ class PartiedejeuTestChangement {
         partie = new Partiedejeu(joueurs, true, 0, pioche, defausse);
     }
     @Test
-    public void TestInverseSens(){
-        assertEquals(alice,partie.joueurCourant());
-        Carte inverseVert = new Carte(Carte.eValeur.CHANGEMENT_SENS, Carte.eCouleur.VERT);
-        partie.jouer(inverseVert);
-        assertEquals(2,alice.getNbCarteEnMain());
-        partie.finirTourDe(alice);
-        assertEquals(charles,partie.joueurCourant());
-        partie.jouer(inverseVert);
-        assertEquals(2,charles.getNbCarteEnMain());
-        Carte unBleu = new Carte(Carte.eValeur.UN, Carte.eCouleur.BLEU);
-        assertThrows(PartieException.class, () -> partie.jouer(unBleu));
-        assertEquals(2,charles.getNbCarteEnMain());
+    public void testLogiqueDesCartesSpe(){
+        assertEquals(alice, partie.joueurCourant());
+        Carte changeVert = new Carte(Carte.eValeur.CHANGEMENT_SENS, Carte.eCouleur.VERT);
+        partie.jouer(changeVert);
+        /*on test dire Uno alors qu'il nous reste plus d'une carte selon la logique il n'a pas le droit
+        de dire Uno donc sa carte jouer est annuler et dois piocher 2 cartes
+         */
+        alice.DireUno(partie);
+        assertThrows(UnoException.class, () -> partie.finirTourDe( alice));
+        assertEquals(bob, partie.joueurCourant());
+        assertEquals(5,alice.getNbCarteEnMain());
+        //on joue une carte simple legale
+        Carte sixVert = new Carte(Carte.eValeur.SIX, Carte.eCouleur.VERT);
+        partie.jouer(sixVert);
+        partie.finirTourDe(bob);
+        partie.jouer(changeVert);
         partie.finirTourDe(charles);
-        assertEquals(alice,partie.joueurCourant());
-        Carte neufBleu = new Carte(Carte.eValeur.NEUF, Carte.eCouleur.VERT);
-        partie.jouer(neufBleu);
-        assertEquals(1,alice.getNbCarteEnMain());
-       assertThrows(UnoException.class,() -> partie.finirTourDe(alice));
-        assertEquals(4,alice.getNbCarteEnMain());
-        assertEquals(bob,partie.joueurCourant());
+        //on oublie de dire Uno
+        assertEquals(bob, partie.joueurCourant());
+        Carte plus4Vert = new Carte(Carte.eValeur.PLUS_4, Carte.eCouleur.VERT);
+        partie.jouer(plus4Vert);
+        assertThrows(UnoException.class,()-> partie.finirTourDe(bob));
+        assertEquals(alice, partie.joueurCourant());
 
     }
-  /*  @Test
-    public void TestChangementdeCouleur(){
-
-    }*/
-
 }

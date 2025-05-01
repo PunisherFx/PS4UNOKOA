@@ -1,6 +1,6 @@
-package LogiqueDeJeu;
+package Metier.LogiqueDeJeu;
 
-import Exceptions.PiocheException;
+import Metier.Exceptions.PiocheException;
 
 import java.util.ArrayList;
 

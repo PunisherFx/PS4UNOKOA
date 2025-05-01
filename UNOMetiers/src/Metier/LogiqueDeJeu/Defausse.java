@@ -1,4 +1,4 @@
-package LogiqueDeJeu;
+package Metier.LogiqueDeJeu;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ public class Defausse {
     public Defausse(List<Carte> tas) {
         this.tas = tas;
     }
-
+// on rajoute une carte sur le tas
     public void poserUneCarte(Carte c){
         tas.add(c);
     }
