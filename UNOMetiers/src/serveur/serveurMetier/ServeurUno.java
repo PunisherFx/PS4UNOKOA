@@ -48,4 +48,8 @@ public class ServeurUno {
         motsCensures.add("SALE");
         motsCensures.add("FUCK");
     }
+    public void diffuser(String message) {
+        MessagePublic(+message);
+    }
+
 }
