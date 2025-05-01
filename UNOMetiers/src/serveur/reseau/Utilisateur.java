@@ -1,7 +1,9 @@
 package serveur.reseau;
 
+import serveur.serveurMetier.ServeurExceptions;
 import serveur.serveurMetier.ServeurUno;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -90,14 +92,33 @@ public class Utilisateur {
         switch (typeMessage) {
             case "@CONNEXION" -> traiterConnexion(message);
             case "@DECONNEXION" -> traiterDeconnexion();
-            case "@MP_TO" -> traiterMP_TO(message);
+           //case "@MP_TO" -> traiterMP_TO(message);
             case "@TO_ALL" -> traiterTO_ALL(message);
-            case "@@DEMARRER_PARTIE" -> lancerPartie();
+            //case "@@DEMARRER_PARTIE" -> lancerPartie();*/
 
         }
     }
+    private void traiterMP_TO(String message) {
+        String[] mots = message.split(" ", 3);
 
-    public boolean verifieProtocole(String message) {
+        if (mots.length < 3) {
+            threadConnexion.envoyerMessageAuClient("@ERROR Format incorrect. Utilisez : @MP_TO pseudo message");
+            return;
+        }
+        String destinataire = mots[1];
+        String contenu = mots[2];
+
+        try {
+            serveur.messagePrive(this, destinataire, contenu);
+        } catch (ServeurExceptions e) {
+            threadConnexion.envoyerMessageAuClient("@ERROR " + e.getMessage());
+        }
+    }
+    private void traiterTO_ALL(String message) {
+        serveur.messagePublic(this, message);
+
+    }
+        public boolean verifieProtocole(String message) {
         for (String phraseDuProtocole : protocole) {
             if (verifiePhraseDuProtocole(message, phraseDuProtocole))
                 return true;
@@ -117,17 +138,36 @@ public class Utilisateur {
         }
         String pseudo = mots[1];
 
-        if (getPseudo().equals(serveur.get(pseudo))) {
+        if (serveur.present(pseudo)) {
             threadConnexion.envoyerMessageAuClient("@ERROR Ce pseudo est déjà utilisé.");
             return;
         }
         this.pseudo = pseudo;
         this.valide = true;
-        threadConnexion.envoyerMessageAuClient("@CONNEXION_OK Bienvenue " + pseudo + " !");
+        threadConnexion.envoyerMessageAuClient("Bienvenue " + pseudo + " !");
         serveur.add(this);
-        serveur.diffuser("@PUBLIC_FROM Serveur " + pseudo + " a rejoint la partie !");
+        serveur.diffuser("Nouvelle Connexion de :  "+pseudo , this);
+    }
+    private void traiterDeconnexion() {
+        try {
+            this.serveur.messagePublic(this, "Je suis parti"); // Notifie les autres
+            this.threadConnexion.fin();
+            this.socket.close();
+            this.serveur.remove(this);  // Retire de la liste du serveur
+        } catch (ServeurExceptions | IOException e) {
+            throw new RuntimeException("Erreur lors de la déconnexion de l'utilisateur : " + pseudo, e);
+        }
+    }
+    public void envoyerMessagePublic(Utilisateur emetteur, String message) {
+        threadConnexion.envoyerMessageAuClient(emetteur.getPseudo() + " " + message);
+    }
+    public void envoyerMessagePrive(Utilisateur emetteur, String message) {
+        threadConnexion.envoyerMessageAuClient("@MP_FROM " + emetteur.getPseudo() + " " + message);
     }
 
+    public ThreadConnexion getThreadConnexion() {
+        return threadConnexion;
+    }
 }
 
 

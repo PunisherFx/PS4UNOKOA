@@ -56,4 +56,7 @@ public class ThreadConnexion extends Thread {
         this.out.println(message);
         this.out.flush();
     }
+    public void fin() {
+        fin = true;
+    }
 }

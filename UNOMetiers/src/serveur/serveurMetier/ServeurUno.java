@@ -1,6 +1,7 @@
 package serveur.serveurMetier;
 
 import serveur.reseau.ThreadAcceptConnexion;
+import serveur.reseau.ThreadConnexion;
 import serveur.reseau.Utilisateur;
 
 import java.util.ArrayList;
@@ -48,8 +49,42 @@ public class ServeurUno {
         motsCensures.add("SALE");
         motsCensures.add("FUCK");
     }
-    public void diffuser(String message) {
-        MessagePublic(+message);
+    public void diffuser(String message, Utilisateur expediteur) {
+        for (Utilisateur u : users) {
+            if (u.equals(expediteur)) continue;
+
+            ThreadConnexion cnx = u.getThreadConnexion();
+            if (cnx != null && u.isValide()) {
+                cnx.envoyerMessageAuClient(message);
+            }
+        }
+    }
+public void messagePublic(Utilisateur emetteur, String message) {
+        for (String mot : motsCensures) {
+            message = message.replace(mot, censure);
+        }
+        for (Utilisateur utilisateur : users) {
+            if (utilisateur.equals(emetteur)) {
+                continue;
+            }
+            utilisateur.envoyerMessagePublic(emetteur, message);
+        }
+    }
+    public void messagePrive(Utilisateur emetteur, String pseudoDestination, String message) throws ServeurExceptions {
+        Utilisateur dest = get(pseudoDestination);
+
+        dest.envoyerMessagePrive(emetteur, message);
+    }
+
+
+    public boolean present(String pseudo) {
+        for (int i = 0; i < users.size(); i++) {
+            String p = users.get(i).getPseudo();
+            if (p != null && p.equalsIgnoreCase(pseudo)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
