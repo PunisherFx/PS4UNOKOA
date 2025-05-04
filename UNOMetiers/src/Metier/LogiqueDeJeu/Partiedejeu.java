@@ -27,7 +27,12 @@ public class Partiedejeu {
         this.tas = tas;
         this.tourCourant = true;
     }
+    public void initialiserJoueurs(ArrayList<Joueur> joueurs) {
+        if (joueurs==null) throw new IllegalArgumentException("liste est vide pour initialiser la main");
+        joueursDelaPartie.clear();
+        joueursDelaPartie.addAll(joueurs);
 
+    }
     public Joueur joueurCourant() {
         if (indiceDuJoueurCourant >= 0 && indiceDuJoueurCourant < joueursDelaPartie.size()) {
             //tourCourant = true;

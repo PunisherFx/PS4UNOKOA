@@ -1,5 +1,6 @@
 package serveur.reseau;
 
+import Metier.LogiqueDeJeu.Partiedejeu;
 import serveur.serveurMetier.ServeurExceptions;
 import serveur.serveurMetier.ServeurUno;
 
@@ -40,13 +41,11 @@ public class Utilisateur {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Utilisateur that)) return false;
-        return Objects.equals(pseudo, that.pseudo);
-    }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(pseudo);
+        Utilisateur that = (Utilisateur) o;
+        return Objects.equals(pseudo, that.pseudo);
     }
 
     @Override
@@ -92,9 +91,16 @@ public class Utilisateur {
         switch (typeMessage) {
             case "@CONNEXION" -> traiterConnexion(message);
             case "@DECONNEXION" -> traiterDeconnexion();
-           //case "@MP_TO" -> traiterMP_TO(message);
+            case "@MP_TO" -> traiterMP_TO(message);
             case "@TO_ALL" -> traiterTO_ALL(message);
-            //case "@@DEMARRER_PARTIE" -> lancerPartie();*/
+            case "@@DEMARRER_PARTIE" ->{
+                try{
+                    serveur.lancerPartie();
+            } catch (ServeurExceptions e) {
+                threadConnexion.envoyerMessageAuClient("@ERROR " + e.getMessage());
+            }
+        }
+            default -> System.err.println("Ce type de message nexiste pas : " + typeMessage);
 
         }
     }
@@ -146,7 +152,7 @@ public class Utilisateur {
         this.valide = true;
         threadConnexion.envoyerMessageAuClient("Bienvenue " + pseudo + " !");
         serveur.add(this);
-        serveur.diffuser("Nouvelle Connexion de :  "+pseudo , this);
+        serveur.messagePublic(this,"Nouvelle Connexion de :  "+pseudo );
     }
     private void traiterDeconnexion() {
         try {
@@ -161,6 +167,7 @@ public class Utilisateur {
     public void envoyerMessagePublic(Utilisateur emetteur, String message) {
         threadConnexion.envoyerMessageAuClient(emetteur.getPseudo() + " " + message);
     }
+
     public void envoyerMessagePrive(Utilisateur emetteur, String message) {
         threadConnexion.envoyerMessageAuClient("@MP_FROM " + emetteur.getPseudo() + " " + message);
     }

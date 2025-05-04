@@ -1,5 +1,8 @@
 package serveur.serveurMetier;
 
+import Metier.Exceptions.PartieException;
+import Metier.LogiqueDeJeu.Joueur;
+import Metier.LogiqueDeJeu.Partiedejeu;
 import serveur.reseau.ThreadAcceptConnexion;
 import serveur.reseau.ThreadConnexion;
 import serveur.reseau.Utilisateur;
@@ -15,10 +18,13 @@ public class ServeurUno {
         initCensure();
         new ThreadAcceptConnexion(this);
     }
+    public int getUtilisateurs(){
+        return users.size();
+    }
     public boolean add(Utilisateur utilisateur) throws ServeurExceptions {
-        if (utilisateur == null)
+        if (utilisateur == null) {
             throw new ServeurExceptions("La connexion utilisateur vaut null");
-
+        }
         return users.add(utilisateur);
     }
 
@@ -49,17 +55,7 @@ public class ServeurUno {
         motsCensures.add("SALE");
         motsCensures.add("FUCK");
     }
-    public void diffuser(String message, Utilisateur expediteur) {
-        for (Utilisateur u : users) {
-            if (u.equals(expediteur)) continue;
-
-            ThreadConnexion cnx = u.getThreadConnexion();
-            if (cnx != null && u.isValide()) {
-                cnx.envoyerMessageAuClient(message);
-            }
-        }
-    }
-public void messagePublic(Utilisateur emetteur, String message) {
+    public void messagePublic(Utilisateur emetteur, String message) {
         for (String mot : motsCensures) {
             message = message.replace(mot, censure);
         }
@@ -87,4 +83,17 @@ public void messagePublic(Utilisateur emetteur, String message) {
         return false;
     }
 
+    public void lancerPartie() {
+        if (getUtilisateurs()<2){
+            throw new PartieException("il faut au minimun 2 joueurs");
+        }
+        ArrayList<Joueur> joueurs = new ArrayList<>();
+        for (Utilisateur u : users) {
+            Joueur j = new Joueur(u.getPseudo());
+            joueurs.add(j);
+        }
+        Partiedejeu p = null;
+        p.initialiserJoueurs(joueurs);
+
+    }
 }
