@@ -3,21 +3,36 @@ package serveur.serveurMetier;
 import Metier.Exceptions.PartieException;
 import Metier.LogiqueDeJeu.Joueur;
 import Metier.LogiqueDeJeu.Partiedejeu;
+import Metier.LogiqueDeJeu.Pioche;
 import serveur.reseau.ThreadAcceptConnexion;
 import serveur.reseau.ThreadConnexion;
 import serveur.reseau.Utilisateur;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.ArrayList;
 
 public class ServeurUno {
     private int port;
     private ArrayList<Utilisateur> users = new ArrayList<>();
+     ThreadConnexion connexion = null;
+     private boolean partieEnCour;
 
     public ServeurUno(int port) {
         this.port = port;
         initCensure();
         new ThreadAcceptConnexion(this);
     }
+
+    public boolean isPartieEnCour() {
+        return partieEnCour;
+    }
+
+    public void setPartieEnCour(boolean partieEnCour) {
+        this.partieEnCour = partieEnCour;
+    }
+
     public int getUtilisateurs(){
         return users.size();
     }
@@ -56,9 +71,12 @@ public class ServeurUno {
         motsCensures.add("FUCK");
     }
     public void messagePublic(Utilisateur emetteur, String message) {
+        // On remplace les mots tabous du message
         for (String mot : motsCensures) {
             message = message.replace(mot, censure);
         }
+
+        // Et on parcours la liste des utilisateurs pour leur envoyer le message à chacun (sauf à soi-même)
         for (Utilisateur utilisateur : users) {
             if (utilisateur.equals(emetteur)) {
                 continue;
@@ -73,7 +91,7 @@ public class ServeurUno {
     }
 
 
-    public boolean present(String pseudo) {
+   /* public boolean present(String pseudo) {
         for (int i = 0; i < users.size(); i++) {
             String p = users.get(i).getPseudo();
             if (p != null && p.equalsIgnoreCase(pseudo)) {
@@ -81,19 +99,34 @@ public class ServeurUno {
             }
         }
         return false;
-    }
+    }*/
 
-    public void lancerPartie() {
-        if (getUtilisateurs()<2){
-            throw new PartieException("il faut au minimun 2 joueurs");
-        }
-        ArrayList<Joueur> joueurs = new ArrayList<>();
-        for (Utilisateur u : users) {
-            Joueur j = new Joueur(u.getPseudo());
-            joueurs.add(j);
-        }
-        Partiedejeu p = null;
-        p.initialiserJoueurs(joueurs);
+   public void lancerPartie() {
+       // on verifie qu'il ya au minimum 2 joueurs
+       if (getUtilisateurs() < 1) {
+           connexion.envoyerMessageAuClient("@ERROR il faut au minimum 2 joueurs pour lancer la partie ");
+           return;
+       }
+       ArrayList<Joueur> joueurs = new ArrayList<>();
+       for (Utilisateur u : users) {
+           Joueur j = new Joueur(u.getPseudo());
+           joueurs.add(j);
+       }
+       Partiedejeu nvPartie = new Partiedejeu();
+       partieEnCour = true;
+       nvPartie.initialiserJoueurs(joueurs);
+   }
 
-    }
+
+   /*cette methode du serveur qui s'occuper d'informer les autres jouers en cas de nouvelles ex carte jouer
+    une nouvlle connexion etc... */
+   public void diffuserMessage(String message){
+       for (Utilisateur u : users) {
+         //  if (u.equals(expediteur)) continue;
+           ThreadConnexion cnx = u.getThreadConnexion();
+           if (cnx != null && u.isValide()) {
+               cnx.envoyerMessageAuClient(message);
+           }
+       }
+   }
 }

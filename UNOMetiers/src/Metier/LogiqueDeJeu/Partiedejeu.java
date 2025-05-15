@@ -3,6 +3,7 @@ package Metier.LogiqueDeJeu;
 import Metier.Exceptions.PartieException;
 import Metier.Exceptions.PiocheException;
 import Metier.Exceptions.UnoException;
+import serveur.serveurMetier.ServeurUno;
 
 import java.util.ArrayList;
 
@@ -18,6 +19,13 @@ public class Partiedejeu {
     private boolean effetPlus2;
     private boolean effetPlus4;
     private int compteurCarteSpe = 1 ;
+    private boolean finManche;
+    private Joueur vainqueur;
+   //ti private ServeurUno serveur;
+
+    public Partiedejeu() {
+    initialiserPartie(joueursDelaPartie, true, indiceDuJoueurCourant, null, null);
+    }
 
     public Partiedejeu(ArrayList<Joueur> joueursDelaPartie, boolean sensHoraire, int indiceDuJoueurCourant, Pioche pioche, Defausse tas) {
         this.joueursDelaPartie = joueursDelaPartie;
@@ -56,6 +64,7 @@ public class Partiedejeu {
         }
     }
     public void passeTour() {
+        if (finManche) {return;}
         int nbJoueurs = joueursDelaPartie.size();
 
         if (sensHoraire) {
@@ -68,6 +77,9 @@ public class Partiedejeu {
         aFaitUneAction = false;
     }
     public void jouer(Carte c) {
+        if (finManche) {
+            throw new PartieException("la manche est fini");
+        }
         if (tourCourant == false) {
             throw new PartieException("Vous n'avez pas le droit de jouer");
         }
@@ -97,6 +109,7 @@ public class Partiedejeu {
                 tas.poserUneCarte(c);
                 aFaitUneAction = true;
                 tourCourant = false;
+               // serveur.diffuserMessage("carte jouer" +c);
             }else {
                 if (carteJeu.getValeur() == Carte.eValeur.PASSE){
                     aFaitUneAction = true;
@@ -127,6 +140,9 @@ public class Partiedejeu {
         }
     }
     public void finirTourDe (Joueur joueur){
+        if (finManche) {
+            throw new PartieException("la manche est fini");
+        }
         Carte c = tas.carteAJouer();
         if (joueur != joueurCourant()) {
             throw new PartieException("Ce n'est pas à vous de finir le tour !");
@@ -169,6 +185,10 @@ public class Partiedejeu {
                 sensHoraire = true;
             }
         }
+        if (joueur.getNbCarteEnMain()== 0){
+            finManche = true;
+            vainqueur = joueurCourant();
+        }
         passeTour();
         if (c.getValeur()== Carte.eValeur.PASSE){
             passeTour();
@@ -182,6 +202,9 @@ public class Partiedejeu {
     }
 
     public Carte piocherUneCarte(Joueur joueur) {
+        if (finManche) {
+            throw new PartieException("la manche est fini");
+        }
         Joueur j = joueurCourant();
         if (effetPlus2){
             ajouterLaCartePioche(j);
@@ -224,6 +247,9 @@ public class Partiedejeu {
         }
     }
      public void encaisserAttaque() {
+         if (finManche) {
+             throw new PartieException("la manche est fini");
+         }
          if (effetPlus2) {
              Joueur joueur = joueurCourant();
              int nb = compteurCarteSpe * 2;

@@ -38,7 +38,7 @@ public class ThreadConnexion extends Thread {
             Utilisateur connexion = this.connexion;
             while (!fin) {
                 message = in.readLine();
-                connexion.controlerMessage(message);
+                   connexion.controlerMessage(message);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -51,7 +51,6 @@ public class ThreadConnexion extends Thread {
             }
         }
     }
-
     public void envoyerMessageAuClient(String message) {
         this.out.println(message);
         this.out.flush();

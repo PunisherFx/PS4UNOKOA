@@ -1,11 +1,14 @@
 package serveur.reseau;
 
+import Metier.LogiqueDeJeu.Carte;
+import Metier.LogiqueDeJeu.Joueur;
 import Metier.LogiqueDeJeu.Partiedejeu;
 import serveur.serveurMetier.ServeurExceptions;
 import serveur.serveurMetier.ServeurUno;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -72,7 +75,7 @@ public class Utilisateur {
     private final static String[] protocole = {regexCONNEXION, regexDECONNEXION, regexMP_TO, regexTO_ALL,
             regexDEMARRER, regexCARTE_JOUEE, regexFIN_TOUR, regexPIOCHE};
 
-    public void controlerMessage(String message) {
+    public void controlerMessage(String message) throws IOException {
         if (message == null) {
             valide = false;
             try {
@@ -93,16 +96,24 @@ public class Utilisateur {
             case "@DECONNEXION" -> traiterDeconnexion();
             case "@MP_TO" -> traiterMP_TO(message);
             case "@TO_ALL" -> traiterTO_ALL(message);
-            case "@@DEMARRER_PARTIE" ->{
-                try{
-                    serveur.lancerPartie();
-            } catch (ServeurExceptions e) {
-                threadConnexion.envoyerMessageAuClient("@ERROR " + e.getMessage());
-            }
-        }
+            case "@DEMARRER_PARTIE" ->  serveur.lancerPartie();
+            case "@CARTE_JOUEE" -> carteJouer(message);
             default -> System.err.println("Ce type de message nexiste pas : " + typeMessage);
 
         }
+    }
+    public void carteJouer(String message){
+        String Carte = message.substring(13);
+        String[] partie = Carte.split(" ");
+        if (partie.length != 2) {
+            threadConnexion.envoyerMessageAuClient("@ERROR Format de carte incorrect ");
+            return;
+        }
+        String valeur = partie[0];
+        String couleur = partie[1];
+        Carte carte = new Carte(Metier.LogiqueDeJeu.Carte.eValeur.valueOf(valeur.toUpperCase()),
+                                    Metier.LogiqueDeJeu.Carte.eCouleur.valueOf(couleur.toUpperCase()));
+        serveur.messagePublic(this,"j'ai jouer la" + carte);
     }
     private void traiterMP_TO(String message) {
         String[] mots = message.split(" ", 3);
@@ -143,29 +154,44 @@ public class Utilisateur {
             return;
         }
         String pseudo = mots[1];
+        if (serveur.isPartieEnCour()) {
+            threadConnexion.envoyerMessageAuClient(" Une partie est déjà en cours. Connexion refusée.");
+            try {
+                socket.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
-        if (serveur.present(pseudo)) {
-            threadConnexion.envoyerMessageAuClient("@ERROR Ce pseudo est déjà utilisé.");
             return;
         }
-        this.pseudo = pseudo;
-        this.valide = true;
-        threadConnexion.envoyerMessageAuClient("Bienvenue " + pseudo + " !");
-        serveur.add(this);
-        serveur.messagePublic(this,"Nouvelle Connexion de :  "+pseudo );
+        try {
+            serveur.get(pseudo);
+            threadConnexion.envoyerMessageAuClient("@ERROR Pseudo déjà utilisé");
+        } catch (ServeurExceptions e) {
+            this.pseudo = pseudo;
+            this.valide = true;
+            threadConnexion.envoyerMessageAuClient("@OK Bienvenue " + pseudo + " ! ");
+            //serveur.add(this);
+            //serveur.messagePublic(this ,pseudo+ " a rejoint le serveur" );
+        }
+       /* if (serveur.present(pseudo)) {
+            threadConnexion.envoyerMessageAuClient("@ERROR Ce pseudo est déjà utilisé.");
+            return;
+        }*/
+        serveur.messagePublic(this ," a rejoint le serveur" );
     }
     private void traiterDeconnexion() {
         try {
             this.serveur.messagePublic(this, "Je suis parti"); // Notifie les autres
-            this.threadConnexion.fin();
             this.socket.close();
-            this.serveur.remove(this);  // Retire de la liste du serveur
+            this.serveur.remove(this);
+            this.threadConnexion.fin();// Retire de la liste du serveur
         } catch (ServeurExceptions | IOException e) {
             throw new RuntimeException("Erreur lors de la déconnexion de l'utilisateur : " + pseudo, e);
         }
     }
     public void envoyerMessagePublic(Utilisateur emetteur, String message) {
-        threadConnexion.envoyerMessageAuClient(emetteur.getPseudo() + " " + message);
+        threadConnexion.envoyerMessageAuClient("@PUBLIC_FROM " + emetteur.getPseudo() + " " + message);
     }
 
     public void envoyerMessagePrive(Utilisateur emetteur, String message) {
