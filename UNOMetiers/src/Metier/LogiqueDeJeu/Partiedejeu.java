@@ -43,6 +43,13 @@ public class Partiedejeu {
         this.pioche = pioche;
         this.tas = tas;
         this.tourCourant = true;
+        this.pioche.initialiser(carte.initialiserCarteDuJeu());
+        for (Joueur j : joueursDelaPartie) {
+            for (int i = 0; i < 7; i++) {
+                j.ajouterUneCarte(pioche.depiler());
+            }
+        }
+        this.tas.poserUneCarte(pioche.depiler());
     }
 
     public boolean isFinManche() {
