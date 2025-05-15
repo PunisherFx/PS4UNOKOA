@@ -67,6 +67,7 @@ public class Utilisateur {
     private final static String regexCARTE_JOUEE = "^@CARTE_JOUEE \\w+ \\w+$";
     private final static String regexFIN_TOUR = "^@FIN_TOUR$";
     private final static String regexPIOCHE = "^@PIOCHE$";
+    private final static String regexENCAISSE = "^@ENCAISSE";
 
     private final static String regexMP_FROM = "^@MP_FROM \\p{Alnum}+ .*$";
     private final static String regexPUBLIC_FROM = "^@PUBLIC_FROM \\p{Alnum}+ .*$";
@@ -100,9 +101,13 @@ public class Utilisateur {
             case "@CARTE_JOUEE" -> carteJouer(message);
             case "@FIN_TOUR" -> finTour();
             case "@PIOCHE" -> pioche();
+            case "@ENCAISSE" -> encaisse();
             default -> System.err.println("Ce type de message nexiste pas : " + typeMessage);
 
         }
+    }
+    public void encaisse(){
+        serveur.messagePublic(this,"j'ai encaisser l'attaque");
     }
     public void finTour(){
         serveur.messagePublic(this,"j'ai fini mon tour");
