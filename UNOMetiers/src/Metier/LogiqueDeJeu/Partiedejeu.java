@@ -27,6 +27,20 @@ public class Partiedejeu {
         this.tas = tas;
         this.tourCourant = true;
     }
+
+    public void initialiserPartie(ArrayList<Joueur> joueursDelaPartie, boolean sensHoraire, int indiceDuJoueurCourant, Pioche pioche, Defausse tas){
+        this.joueursDelaPartie = joueursDelaPartie;
+        this.sensHoraire = sensHoraire;
+        this.indiceDuJoueurCourant = 0;
+        this.pioche = pioche;
+        this.tas = tas;
+        this.tourCourant = true;
+    }
+
+    public boolean isFinManche() {
+        return finManche;
+    }
+
     public void initialiserJoueurs(ArrayList<Joueur> joueurs) {
         if (joueurs==null) throw new IllegalArgumentException("liste est vide pour initialiser la main");
         joueursDelaPartie.clear();
