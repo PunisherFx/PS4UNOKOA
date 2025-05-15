@@ -98,9 +98,13 @@ public class Utilisateur {
             case "@TO_ALL" -> traiterTO_ALL(message);
             case "@DEMARRER_PARTIE" ->  serveur.lancerPartie();
             case "@CARTE_JOUEE" -> carteJouer(message);
+            case "@FIN_TOUR" -> finTour();
             default -> System.err.println("Ce type de message nexiste pas : " + typeMessage);
 
         }
+    }
+    public void finTour(){
+        serveur.messagePublic(this,"j'ai fini mon tour");
     }
     public void carteJouer(String message){
         String Carte = message.substring(13);
