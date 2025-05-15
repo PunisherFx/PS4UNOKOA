@@ -99,12 +99,16 @@ public class Utilisateur {
             case "@DEMARRER_PARTIE" ->  serveur.lancerPartie();
             case "@CARTE_JOUEE" -> carteJouer(message);
             case "@FIN_TOUR" -> finTour();
+            case "@PIOCHE" -> pioche();
             default -> System.err.println("Ce type de message nexiste pas : " + typeMessage);
 
         }
     }
     public void finTour(){
         serveur.messagePublic(this,"j'ai fini mon tour");
+    }
+    public void pioche(){
+        serveur.messagePublic(this,"j'ai pioche une carte");
     }
     public void carteJouer(String message){
         String Carte = message.substring(13);
