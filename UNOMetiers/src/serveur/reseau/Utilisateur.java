@@ -144,6 +144,8 @@ public class Utilisateur {
         partie.initialiserJoueurs(joueurs);
     }*/
     public void uno(){
+        Joueur j = serveur.getPartiedejeu().getJoueurDepuisPseudo(this.pseudo);
+        j.DireUno(partie);
         serveur.messagePublic(this,"UNOOOOOOOOOO!!!!");
     }
     public void encaisse(){
