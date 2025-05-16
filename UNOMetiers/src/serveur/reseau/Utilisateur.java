@@ -165,6 +165,8 @@ public class Utilisateur {
         }
     }
     public void pioche(){
+        Joueur j = serveur.getPartiedejeu().getJoueurDepuisPseudo(this.pseudo);
+        Carte c = serveur.getPartiedejeu().piocherUneCarte(j);
         serveur.messagePublic(this,"j'ai pioche une carte");
     }
     public void carteJouer(String message){
