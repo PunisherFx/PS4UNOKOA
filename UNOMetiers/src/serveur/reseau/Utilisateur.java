@@ -147,7 +147,8 @@ public class Utilisateur {
         serveur.messagePublic(this,"UNOOOOOOOOOO!!!!");
     }
     public void encaisse(){
-        serveur.messagePublic(this,"j'ai encaisser l'attaque");
+        int nb = serveur.getPartiedejeu().encaisserAttaque();
+        serveur.messagePublic(this,"j'ai encaisser l'attaque" +nb );
     }
     public void finTour(){
         serveur.messagePublic(this,"j'ai fini mon tour");
