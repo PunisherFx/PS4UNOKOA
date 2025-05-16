@@ -104,6 +104,9 @@ public class Utilisateur {
             case "@PIOCHE" -> pioche();
             case "@ENCAISSE" -> encaisse();
             case "@UNO" -> uno();
+            case "@MAIN" -> carteEnMain();
+            case"@CARTE_TAS" -> carteAJOUER();
+            case "@AQUILETOUR" -> tourDe();
             default -> System.err.println("Ce type de message nexiste pas : " + typeMessage);
 
         }
