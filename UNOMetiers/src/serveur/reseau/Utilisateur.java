@@ -111,6 +111,38 @@ public class Utilisateur {
 
         }
     }
+    public void tourDe(){
+        Joueur j = serveur.getPartiedejeu().joueurCourant();
+        threadConnexion.envoyerMessageAuClient("TOUR DE " +j);
+    }
+    public void carteEnMain(){
+        List<Carte> main = serveur.getPartiedejeu().getMainDe(this.pseudo);
+
+        System.out.println("Main de " + this.pseudo + " : " + main);
+        for (Carte c : main) {
+            threadConnexion.envoyerMessageAuClient("@CARTE" +c.toString());
+        }
+
+    }
+    public void carteAJOUER(){
+        Carte c = serveur.getPartiedejeu().carteDuTas();
+        threadConnexion.envoyerMessageAuClient("@CARTE" +c.toString());
+
+    }
+    /*public void lancerPartie() {
+        // on verifie qu'il ya au minimum 2 joueurs
+        if (serveur.getUtilisateurs() < 1) {
+            threadConnexion.envoyerMessageAuClient("@ERROR il faut au minimum 2 joueurs pour lancer la partie ");
+            return;
+        }
+        ArrayList<Joueur> joueurs = new ArrayList<>();
+        for (Utilisateur u : serveur.users) {
+            Joueur j = new Joueur(u.getPseudo());
+            joueurs.add(j);
+        }
+        //partieEnCour = true;
+        partie.initialiserJoueurs(joueurs);
+    }*/
     public void uno(){
         serveur.messagePublic(this,"UNOOOOOOOOOO!!!!");
     }
