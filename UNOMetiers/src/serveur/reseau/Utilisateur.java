@@ -150,8 +150,19 @@ public class Utilisateur {
         int nb = serveur.getPartiedejeu().encaisserAttaque();
         serveur.messagePublic(this,"j'ai encaisser l'attaque" +nb );
     }
-    public void finTour(){
-        serveur.messagePublic(this,"j'ai fini mon tour");
+    public void finTour() {
+        try {
+            Joueur joueur = serveur.getPartiedejeu().getJoueurDepuisPseudo(this.pseudo);
+            if (joueur == null) {
+                threadConnexion.envoyerMessageAuClient("@ERROR Joueur introuvable.");
+                return;
+            }
+
+            serveur.getPartiedejeu().finirTourDe(joueur);
+            serveur.messagePublic(this, "a terminé son tour.");
+        } catch (PartieException e) {
+            threadConnexion.envoyerMessageAuClient("@ERROR " + e.getMessage());
+        }
     }
     public void pioche(){
         serveur.messagePublic(this,"j'ai pioche une carte");
