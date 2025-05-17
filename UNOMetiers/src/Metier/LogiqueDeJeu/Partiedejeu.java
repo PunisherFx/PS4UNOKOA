@@ -283,6 +283,32 @@ public class Partiedejeu {
              passeTour();
          }
 
-         }
-     }
+    public ArrayList<Carte> getCarteDuJeu() {
+        return carteDuJeu;
+    }
+
+    public void setCarteDuJeu(ArrayList<Carte> carteDuJeu) {
+        this.carteDuJeu = carteDuJeu;
+    }
+    public Joueur getJoueurDepuisPseudo(String pseudo) {
+        for (Joueur j : joueursDelaPartie) {
+            if (j.getNom().equals(pseudo)) {
+                return j;
+            }
+        }
+        return null;
+    }
+    public String messageListeJoueurs() {
+        StringBuilder sb = new StringBuilder("@LISTE_JOUEURS");
+
+        for (Joueur j : joueursDelaPartie) {
+            sb.append(" (").append(j.getNom()).append(";").append(j.getCrtEnMain().size()).append(")");
+        }
+
+        return sb.toString();
+    }
+
+
+
+}
 
