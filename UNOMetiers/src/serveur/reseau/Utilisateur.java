@@ -123,6 +123,7 @@ public class Utilisateur {
             threadConnexion.envoyerMessageAuClient("@CARTE" +c.toString());
         }
 
+        return "";
     }
     public void carteAJOUER(){
         Carte c = serveur.getPartiedejeu().carteDuTas();
