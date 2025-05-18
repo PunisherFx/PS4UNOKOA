@@ -18,6 +18,15 @@ public class ServeurUno {
     private ArrayList<Utilisateur> users = new ArrayList<>();
      ThreadConnexion connexion = null;
      private boolean partieEnCour;
+     private Partiedejeu partiedejeu;
+
+    public Partiedejeu getPartiedejeu() {
+        return partiedejeu;
+    }
+
+    public void setPartiedejeu(Partiedejeu partiedejeu) {
+        this.partiedejeu = partiedejeu;
+    }
 
     public ServeurUno(int port) {
         this.port = port;
