@@ -11,6 +11,9 @@ public class Defausse {
     public Defausse(List<Carte> tas) {
         this.tas = tas;
     }
+    public Defausse() {
+        this.tas = new ArrayList<Carte>();
+    }
 // on rajoute une carte sur le tas
     public void poserUneCarte(Carte c){
         tas.add(c);
