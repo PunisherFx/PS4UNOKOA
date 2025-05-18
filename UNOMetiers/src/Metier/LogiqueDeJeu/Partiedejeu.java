@@ -60,6 +60,18 @@ public class Partiedejeu {
         if (joueurs==null) throw new IllegalArgumentException("liste est vide pour initialiser la main");
         joueursDelaPartie.clear();
         joueursDelaPartie.addAll(joueurs);
+        this.sensHoraire = sensHoraire;
+        this.indiceDuJoueurCourant = 0;
+        this.tourCourant = true;
+        this.pioche = new Pioche();
+        this.pioche.initialiser(Carte.initialiserCarteDuJeu());
+        for (Joueur j : joueursDelaPartie) {
+            for (int i = 0; i < 7; i++) {
+                j.ajouterUneCarte(pioche.depiler());
+            }
+        }
+        this.tas = new Defausse();
+        this.tas.poserUneCarte(this.pioche.depiler());
 
     }
     public Joueur joueurCourant() {
