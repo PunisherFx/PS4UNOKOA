@@ -1,5 +1,8 @@
 package serveur.reseau;
 
+import Metier.Exceptions.PartieException;
+import Metier.Exceptions.PiocheException;
+import Metier.Exceptions.UnoException;
 import Metier.LogiqueDeJeu.Carte;
 import Metier.LogiqueDeJeu.Joueur;
 import Metier.LogiqueDeJeu.Partiedejeu;
@@ -9,6 +12,7 @@ import serveur.serveurMetier.ServeurUno;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -18,6 +22,7 @@ public class Utilisateur {
     private ServeurUno serveur;
     private Socket socket;
     private boolean valide = false;
+    private Partiedejeu partie;
 
     public Utilisateur(Socket socket, ServeurUno serveur) {
         this.socket = socket;
@@ -69,13 +74,19 @@ public class Utilisateur {
     private final static String regexPIOCHE = "^@PIOCHE$";
     private final static String regexENCAISSE = "^@ENCAISSE";
     private final static String regexUNO = "^@UNO$";
+    private final static String regexMAIN = "^@MAIN";
+    private final static String regexCARTETAS = "^@CARTE_TAS";
+    private final static String regexTOUR= "^@AQUILETOUR";
+
 
     private final static String regexMP_FROM = "^@MP_FROM \\p{Alnum}+ .*$";
     private final static String regexPUBLIC_FROM = "^@PUBLIC_FROM \\p{Alnum}+ .*$";
     private final static String regexERROR = "^@ERROR .*$";
+    private final static String regexLISTE_JOUEURS = "^@LISTE_JOUEURS (\\[\\w+;\\d+] ?)+$";
 
     private final static String[] protocole = {regexCONNEXION, regexDECONNEXION, regexMP_TO, regexTO_ALL,
-            regexDEMARRER, regexCARTE_JOUEE, regexFIN_TOUR, regexPIOCHE};
+            regexDEMARRER, regexCARTE_JOUEE, regexFIN_TOUR, regexPIOCHE,regexENCAISSE,regexUNO,regexMAIN,regexCARTETAS,
+            regexTOUR};
 
     public void controlerMessage(String message) throws IOException {
         if (message == null) {
@@ -111,24 +122,24 @@ public class Utilisateur {
 
         }
     }
-    public void tourDe(){
+    public String tourDe(){
         Joueur j = serveur.getPartiedejeu().joueurCourant();
         threadConnexion.envoyerMessageAuClient("TOUR DE " +j);
+        return "";
     }
-    public void carteEnMain(){
+    public String carteEnMain(){
         List<Carte> main = serveur.getPartiedejeu().getMainDe(this.pseudo);
 
         System.out.println("Main de " + this.pseudo + " : " + main);
         for (Carte c : main) {
-            threadConnexion.envoyerMessageAuClient("@CARTE" +c.toString());
+            threadConnexion.envoyerMessageAuClient("@CARTE" + c.toString());
         }
 
         return "";
     }
     public void carteAJOUER(){
-        Carte c = serveur.getPartiedejeu().carteDuTas();
-        threadConnexion.envoyerMessageAuClient("@CARTE" +c.toString());
-
+            Carte c = serveur.getPartiedejeu().carteDuTas();
+            threadConnexion.envoyerMessageAuClient("@CARTE" + c.toString());
     }
     /*public void lancerPartie() {
         // on verifie qu'il ya au minimum 2 joueurs
@@ -162,28 +173,46 @@ public class Utilisateur {
             }
 
             serveur.getPartiedejeu().finirTourDe(joueur);
+            if (serveur.getPartiedejeu().isFinManche()){
+                serveur.diffuserMessage("La partie est terminer ");
+                serveur.diffuserMessage("le vainquer est "  + serveur.getPartiedejeu().getVainqueur());
+                return;
+            }
             serveur.messagePublic(this, "a terminé son tour.");
-        } catch (PartieException e) {
+            threadConnexion.envoyerMessageAuClient(carteEnMain());
+            serveur.diffuserMessage(serveur.getPartiedejeu().messageListeJoueurs());
+            serveur.diffuserMessage(tourDe());
+        } catch (PartieException | UnoException e) {
             threadConnexion.envoyerMessageAuClient("@ERROR " + e.getMessage());
         }
     }
     public void pioche(){
-        Joueur j = serveur.getPartiedejeu().getJoueurDepuisPseudo(this.pseudo);
-        Carte c = serveur.getPartiedejeu().piocherUneCarte(j);
-        serveur.messagePublic(this,"j'ai pioche une carte");
-    }
-    public void carteJouer(String message){
-        String Carte = message.substring(13);
-        String[] partie = Carte.split(" ");
-        if (partie.length != 2) {
-            threadConnexion.envoyerMessageAuClient("@ERROR Format de carte incorrect ");
-            return;
+        try {
+            Joueur j = serveur.getPartiedejeu().getJoueurDepuisPseudo(this.pseudo);
+            Carte c = serveur.getPartiedejeu().piocherUneCarte(j);
+            serveur.messagePublic(this, "j'ai pioche une carte");
+            threadConnexion.envoyerMessageAuClient("la carte " + c + "a ete ajouter a vitre main");
+        }catch (PiocheException e){
+            threadConnexion.envoyerMessageAuClient("@ERROR" + e.getMessage());
         }
-        String valeur = partie[0];
-        String couleur = partie[1];
-        Carte carte = new Carte(Metier.LogiqueDeJeu.Carte.eValeur.valueOf(valeur.toUpperCase()),
-                                    Metier.LogiqueDeJeu.Carte.eCouleur.valueOf(couleur.toUpperCase()));
-        serveur.messagePublic(this,"j'ai jouer la" + carte);
+        }
+    public void carteJouer(String message) {
+        try {
+            String Carte = message.substring(13);
+            String[] partie = Carte.split(" ");
+            if (partie.length != 2) {
+                threadConnexion.envoyerMessageAuClient("@ERROR Format de carte incorrect ");
+                return;
+            }
+            String valeur = partie[0];
+            String couleur = partie[1];
+            Carte carte = new Carte(Metier.LogiqueDeJeu.Carte.eValeur.valueOf(valeur.toUpperCase()),
+                    Metier.LogiqueDeJeu.Carte.eCouleur.valueOf(couleur.toUpperCase()));
+            serveur.getPartiedejeu().jouer(carte);
+            serveur.messagePublic(this, "j'ai jouer la" + carte);
+        } catch (PartieException | IllegalArgumentException e) {
+            threadConnexion.envoyerMessageAuClient("@ERROR" + e.getMessage());
+        }
     }
     private void traiterMP_TO(String message) {
         String[] mots = message.split(" ", 3);

@@ -6,6 +6,7 @@ import Metier.Exceptions.UnoException;
 import serveur.serveurMetier.ServeurUno;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Partiedejeu {
     private ArrayList<Joueur> joueursDelaPartie = new ArrayList<>();
@@ -21,10 +22,19 @@ public class Partiedejeu {
     private int compteurCarteSpe = 1 ;
     private boolean finManche;
     private Joueur vainqueur;
+    private Carte carte;
+    private ArrayList<Carte> carteDuJeu = new ArrayList<>();
    //ti private ServeurUno serveur;
 
     public Partiedejeu() {
-    initialiserPartie(joueursDelaPartie, true, indiceDuJoueurCourant, null, null);
+    }
+
+    public Joueur getVainqueur() {
+        return vainqueur;
+    }
+
+    public void setFinManche(boolean finManche) {
+        this.finManche = finManche;
     }
 
     public Partiedejeu(ArrayList<Joueur> joueursDelaPartie, boolean sensHoraire, int indiceDuJoueurCourant, Pioche pioche, Defausse tas) {
@@ -36,27 +46,27 @@ public class Partiedejeu {
         this.tourCourant = true;
     }
 
-    public void initialiserPartie(ArrayList<Joueur> joueursDelaPartie, boolean sensHoraire, int indiceDuJoueurCourant, Pioche pioche, Defausse tas){
+   /* public void initialiserPartie(ArrayList<Joueur> joueursDelaPartie, boolean sensHoraire, int indiceDuJoueurCourant, Pioche pioche, Defausse tas){
         this.joueursDelaPartie = joueursDelaPartie;
         this.sensHoraire = sensHoraire;
         this.indiceDuJoueurCourant = 0;
-        this.pioche = pioche;
-        this.tas = tas;
         this.tourCourant = true;
-        this.pioche.initialiser(carte.initialiserCarteDuJeu());
+        this.pioche = new Pioche();
+        this.pioche.initialiser(Carte.initialiserCarteDuJeu());
         for (Joueur j : joueursDelaPartie) {
             for (int i = 0; i < 7; i++) {
                 j.ajouterUneCarte(pioche.depiler());
             }
         }
-        this.tas.poserUneCarte(pioche.depiler());
-    }
+        this.tas = new Defausse();
+        this.tas.poserUneCarte(this.pioche.depiler());
+    }*/
 
     public boolean isFinManche() {
         return finManche;
     }
 
-    public void initialiserJoueurs(ArrayList<Joueur> joueurs) {
+    public void initialiserPartie(ArrayList<Joueur> joueurs) {
         if (joueurs==null) throw new IllegalArgumentException("liste est vide pour initialiser la main");
         joueursDelaPartie.clear();
         joueursDelaPartie.addAll(joueurs);
@@ -265,7 +275,7 @@ public class Partiedejeu {
             throw new UnoException("Ce n'est pas votre tour vous ne pouvez pas dire UNO");
         }
     }
-     public void encaisserAttaque() {
+     public int encaisserAttaque() {
          if (finManche) {
              throw new PartieException("la manche est fini");
          }
@@ -280,6 +290,7 @@ public class Partiedejeu {
 
              effetPlus2 = false;
              passeTour();
+             return nb;
          }
 
          if (effetPlus4) {
@@ -303,7 +314,7 @@ public class Partiedejeu {
                 return j.getCrtEnMain();
             }
         }
-        throw new PartieException("Main vide"); 
+        throw new PartieException("Main vide");
     }
     public Carte carteDuTas(){
         return  tas.carteAJouer();

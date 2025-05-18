@@ -110,15 +110,9 @@ public class Joueur {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(nom, cartesEnMain);
-    }
-
-    @Override
     public String toString() {
         return "Joueur{" +
                 "nom='" + nom + '\'' +
-                ", cartesEnMain=" + cartesEnMain +
                 '}';
     }
 

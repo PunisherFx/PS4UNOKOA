@@ -1,5 +1,8 @@
 package Metier.LogiqueDeJeu;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class Carte {
@@ -41,7 +44,7 @@ public class Carte {
                 ", couleur=" + couleur +
                 '}';
     }
-    public ArrayList<Carte> initialiserCarteDuJeu() {
+    public static ArrayList<Carte> initialiserCarteDuJeu() {
         ArrayList<Carte> cartes = new ArrayList<>();
 
         for (eCouleur couleur : eCouleur.values()) {

@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class ServeurUno {
     private int port;
-    private ArrayList<Utilisateur> users = new ArrayList<>();
+    public ArrayList<Utilisateur> users = new ArrayList<>();
      ThreadConnexion connexion = null;
      private boolean partieEnCour;
      private Partiedejeu partiedejeu;
@@ -122,8 +122,10 @@ public class ServeurUno {
            joueurs.add(j);
        }
        Partiedejeu nvPartie = new Partiedejeu();
+       nvPartie.initialiserPartie(joueurs);     // ✅ c’est ici qu’on fait la vraie initialisation
+       setPartiedejeu(nvPartie);                 // très bien
        partieEnCour = true;
-       nvPartie.initialiserJoueurs(joueurs);
+       diffuserMessage("que la fete commence");
    }
 
 
