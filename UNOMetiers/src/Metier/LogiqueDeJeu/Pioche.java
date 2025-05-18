@@ -10,6 +10,9 @@ public class Pioche {
     public Pioche(ArrayList<Carte> laPioche) {
         LaPioche = laPioche;
     }
+    public Pioche() {
+        this.LaPioche = new ArrayList<Carte>();
+    }
     //On retourne la carte a pioche autrement dit la carte tout en haut de la pioche
     public Carte getCarteAPiocher(){
         if (LaPioche.isEmpty()) {
