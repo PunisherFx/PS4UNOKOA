@@ -1,5 +1,6 @@
 package Metier.LogiqueDeJeu;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Defausse {
