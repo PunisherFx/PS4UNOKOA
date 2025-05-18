@@ -281,7 +281,21 @@ public class Partiedejeu {
 
              effetPlus4 = false;
              passeTour();
+             return nb;
          }
+         return 0;
+         }
+    public List<Carte> getMainDe(String pseudo) {
+        for (Joueur j : joueursDelaPartie) {
+            if (j.getNom().equals(pseudo)) {
+                return j.getCrtEnMain();
+            }
+        }
+        throw new PartieException("Main vide"); 
+    }
+    public Carte carteDuTas(){
+        return  tas.carteAJouer();
+    }
 
     public ArrayList<Carte> getCarteDuJeu() {
         return carteDuJeu;
