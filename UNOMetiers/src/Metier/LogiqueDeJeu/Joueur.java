@@ -121,4 +121,10 @@ public class Joueur {
                 ", cartesEnMain=" + cartesEnMain +
                 '}';
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nom, cartesEnMain);
+    }
+
 }
