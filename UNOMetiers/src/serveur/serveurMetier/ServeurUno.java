@@ -110,7 +110,7 @@ public class ServeurUno {
         return false;
     }*/
 
-   public void lancerPartie() {
+/*   public void lancerPartie() {
        // on verifie qu'il ya au minimum 2 joueurs
        if (getUtilisateurs() < 1) {
            connexion.envoyerMessageAuClient("@ERROR il faut au minimum 2 joueurs pour lancer la partie ");
@@ -125,8 +125,8 @@ public class ServeurUno {
        nvPartie.initialiserPartie(joueurs);     // ✅ c’est ici qu’on fait la vraie initialisation
        setPartiedejeu(nvPartie);                 // très bien
        partieEnCour = true;
-       diffuserMessage("que la fete commence");
-   }
+       diffuserMessage("@PARTIELANCER" + "que la fete commence");
+   }*/
 
 
    /*cette methode du serveur qui s'occuper d'informer les autres jouers en cas de nouvelles ex carte jouer
@@ -136,7 +136,7 @@ public class ServeurUno {
          //  if (u.equals(expediteur)) continue;
            ThreadConnexion cnx = u.getThreadConnexion();
            if (cnx != null && u.isValide()) {
-               cnx.envoyerMessageAuClient(message);
+               cnx.envoyerMessageAuClient("@INFO " +  message);
            }
        }
    }

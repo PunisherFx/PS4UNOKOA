@@ -1,5 +1,8 @@
 package serveur.reseau;
 
+import BaseDeDonnees.ConnexionBD;
+import BaseDeDonnees.UtilisateurDAO;
+import application.AppClient;
 import Metier.Exceptions.PartieException;
 import Metier.Exceptions.PiocheException;
 import Metier.Exceptions.UnoException;
@@ -23,6 +26,8 @@ public class Utilisateur {
     private Socket socket;
     private boolean valide = false;
     private Partiedejeu partie;
+    private AppClient appClient;
+    //BdUno bd;
 
     public Utilisateur(Socket socket, ServeurUno serveur) {
         this.socket = socket;
@@ -77,8 +82,9 @@ public class Utilisateur {
     private final static String regexMAIN = "^@MAIN";
     private final static String regexCARTETAS = "^@CARTE_TAS";
     private final static String regexTOUR= "^@AQUILETOUR";
+    private final static String regexSCENE= "^@LANCER_SCENE_JEU";
 
-
+    private final static String regexINFO = "^@INFO .*$";
     private final static String regexMP_FROM = "^@MP_FROM \\p{Alnum}+ .*$";
     private final static String regexPUBLIC_FROM = "^@PUBLIC_FROM \\p{Alnum}+ .*$";
     private final static String regexERROR = "^@ERROR .*$";
@@ -109,7 +115,9 @@ public class Utilisateur {
             case "@DECONNEXION" -> traiterDeconnexion();
             case "@MP_TO" -> traiterMP_TO(message);
             case "@TO_ALL" -> traiterTO_ALL(message);
-            case "@DEMARRER_PARTIE" ->  serveur.lancerPartie();
+            case "@DEMARRER_PARTIE" -> {
+                lancerPartie();
+            }
             case "@CARTE_JOUEE" -> carteJouer(message);
             case "@FIN_TOUR" -> finTour();
             case "@PIOCHE" -> pioche();
@@ -121,6 +129,23 @@ public class Utilisateur {
             default -> System.err.println("Ce type de message nexiste pas : " + typeMessage);
 
         }
+    }
+    public void lancerPartie() {
+        // on verifie qu'il ya au minimum 2 joueurs
+        ArrayList<Joueur> joueurs = new ArrayList<>();
+        for (Utilisateur u : serveur.users) {
+            Joueur j = new Joueur(u.getPseudo());
+            joueurs.add(j);
+        }
+        Partiedejeu nvPartie = new Partiedejeu();
+        nvPartie.initialiserPartie(joueurs);     // ✅ c’est ici qu’on fait la vraie initialisation
+        serveur.setPartiedejeu(nvPartie);                 // très bien
+        serveur.setPartieEnCour(true);
+        serveur.diffuserMessage( "que la fete commence");
+        serveur.messagePublic(this,"@DEMARRER_PARTIE");
+        appClient.changerScene();
+        //serveur.diffuserMessage("@LANCER_SCENE_JEU");
+
     }
     public String tourDe(){
         Joueur j = serveur.getPartiedejeu().joueurCourant();
@@ -258,7 +283,7 @@ public class Utilisateur {
             try {
                 socket.close();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+               threadConnexion.envoyerMessageAuClient("@ERROR  UNE partie est deja encour" + e.getMessage());
             }
 
             return;
@@ -270,6 +295,8 @@ public class Utilisateur {
             this.pseudo = pseudo;
             this.valide = true;
             threadConnexion.envoyerMessageAuClient("@OK Bienvenue " + pseudo + " ! ");
+            UtilisateurDAO.ajouterUtilisateur(pseudo);
+            //BdUno.ajouterJoueur(pseudo);
             //serveur.add(this);
             //serveur.messagePublic(this ,pseudo+ " a rejoint le serveur" );
         }
@@ -277,7 +304,7 @@ public class Utilisateur {
             threadConnexion.envoyerMessageAuClient("@ERROR Ce pseudo est déjà utilisé.");
             return;
         }*/
-        serveur.messagePublic(this ," a rejoint le serveur" );
+        serveur.diffuserMessage( pseudo + " a rejoint le serveur" );
     }
     private void traiterDeconnexion() {
         try {

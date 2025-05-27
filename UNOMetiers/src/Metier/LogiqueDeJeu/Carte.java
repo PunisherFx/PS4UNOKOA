@@ -1,5 +1,7 @@
 package Metier.LogiqueDeJeu;
 
+import javafx.scene.image.Image;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -79,6 +81,11 @@ public class Carte {
         // Mélanger aléatoirement
         Collections.shuffle(cartes);
         return cartes;
+    }
+    public static Image getImageFromCarte(Carte carte) {
+        String nomFichier = carte.getValeur() + "_" + carte.getCouleur() + ".png";
+        String chemin = "/" + nomFichier;
+        return new Image(Carte.class.getResourceAsStream(chemin));
     }
 
 }
