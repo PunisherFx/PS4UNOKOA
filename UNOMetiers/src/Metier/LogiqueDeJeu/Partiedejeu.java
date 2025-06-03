@@ -331,6 +331,7 @@ public class Partiedejeu {
         }
         return null;
     }
+    // cette fonction cree un string builder qu'on utilisera pour envoyer au clien donc le nom du jouers avec son nombre de carte
     public String messageListeJoueurs() {
         StringBuilder sb = new StringBuilder("@LISTE_JOUEURS");
 
