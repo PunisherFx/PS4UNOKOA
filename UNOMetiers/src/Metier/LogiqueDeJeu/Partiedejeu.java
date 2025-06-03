@@ -322,14 +322,7 @@ public class Partiedejeu {
     public Carte carteDuTas(){
         return  tas.carteAJouer();
     }
-
-    public ArrayList<Carte> getCarteDuJeu() {
-        return carteDuJeu;
-    }
-
-    public void setCarteDuJeu(ArrayList<Carte> carteDuJeu) {
-        this.carteDuJeu = carteDuJeu;
-    }
+    /* cette methode consiste a trouve un jouers a partir de son pseudo */
     public Joueur getJoueurDepuisPseudo(String pseudo) {
         for (Joueur j : joueursDelaPartie) {
             if (j.getNom().equals(pseudo)) {
