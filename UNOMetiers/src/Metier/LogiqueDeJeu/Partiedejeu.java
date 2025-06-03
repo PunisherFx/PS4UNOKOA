@@ -50,22 +50,6 @@ public class Partiedejeu {
         this.tourCourant = true;
     }
 
-   /* public void initialiserPartie(ArrayList<Joueur> joueursDelaPartie, boolean sensHoraire, int indiceDuJoueurCourant, Pioche pioche, Defausse tas){
-        this.joueursDelaPartie = joueursDelaPartie;
-        this.sensHoraire = sensHoraire;
-        this.indiceDuJoueurCourant = 0;
-        this.tourCourant = true;
-        this.pioche = new Pioche();
-        this.pioche.initialiser(Carte.initialiserCarteDuJeu());
-        for (Joueur j : joueursDelaPartie) {
-            for (int i = 0; i < 7; i++) {
-                j.ajouterUneCarte(pioche.depiler());
-            }
-        }
-        this.tas = new Defausse();
-        this.tas.poserUneCarte(this.pioche.depiler());
-    }*/
-
     public boolean isFinManche() {
         return finManche;
     }
