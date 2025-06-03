@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-
+/**La classe ThreadConnexion représente le thread de communication entre le serveur et un client.
+ * Elle gère la réception et l’envoi de messages via une socket
+ * Elle est liée à un Utilisateur, qui traite les messages reçus
+ */
 public class ThreadConnexion extends Thread {
     private Socket socket;
     private BufferedReader in;
@@ -30,6 +33,10 @@ public class ThreadConnexion extends Thread {
         String message;
 
         try {
+            /**
+             * le thread lit en continu les messages envoyés par le client. Chaque message est ensuite transmis
+             * à la méthode controlerMessage() de l’objet Utilisateur, qui va l’interpréter selon le protocole du jeu UNO.
+             */
             this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.out = new PrintWriter(socket.getOutputStream(), true);
 

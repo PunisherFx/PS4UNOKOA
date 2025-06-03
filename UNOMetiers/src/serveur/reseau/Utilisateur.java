@@ -19,15 +19,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+/**
+  Cette classe représente un joueur connecté côté serveur.On gère les communication, le pseudo,
+ * sa participation à la partie en cours,
+ * et le traitement des messages reçus selon notre protocole personnalisé. »
+ */
+
 public class Utilisateur {
     private ThreadConnexion threadConnexion = null;
     private String pseudo;
     private ServeurUno serveur;
     private Socket socket;
     private boolean valide = false;
-    private Partiedejeu partie;
-    private AppClient appClient;
-    //BdUno bd;
 
     public Utilisateur(Socket socket, ServeurUno serveur) {
         this.socket = socket;
@@ -82,7 +85,8 @@ public class Utilisateur {
     private final static String regexMAIN = "^@MAIN";
     private final static String regexCARTETAS = "^@CARTE_TAS";
     private final static String regexTOUR= "^@AQUILETOUR";
-    private final static String regexSCENE= "^@LANCER_SCENE_JEU";
+    private final static String regexJOUEURS= "^@JOUEURS";
+
 
     private final static String regexINFO = "^@INFO .*$";
     private final static String regexMP_FROM = "^@MP_FROM \\p{Alnum}+ .*$";
@@ -92,8 +96,14 @@ public class Utilisateur {
 
     private final static String[] protocole = {regexCONNEXION, regexDECONNEXION, regexMP_TO, regexTO_ALL,
             regexDEMARRER, regexCARTE_JOUEE, regexFIN_TOUR, regexPIOCHE,regexENCAISSE,regexUNO,regexMAIN,regexCARTETAS,
-            regexTOUR};
+            regexTOUR ,regexJOUEURS };
 
+    /**
+     * c'est la methode pricipale du serveur , a chaque message recu via la socket on verifie si le message
+     * respecte le protocole si ya des commande qui commence par le @ qui sont recu par le serveur
+     * @param message
+     * @throws IOException
+     */
     public void controlerMessage(String message) throws IOException {
         if (message == null) {
             valide = false;
@@ -108,16 +118,13 @@ public class Utilisateur {
             threadConnexion.envoyerMessageAuClient("@ERROR ce que vous dites n'a aucun sens. Votre message est ignoré");
             return;
         }
-        // On récupère le premier mot pour savoir comment traiter le message
         String typeMessage = message.split(" ")[0];
         switch (typeMessage) {
             case "@CONNEXION" -> traiterConnexion(message);
             case "@DECONNEXION" -> traiterDeconnexion();
             case "@MP_TO" -> traiterMP_TO(message);
             case "@TO_ALL" -> traiterTO_ALL(message);
-            case "@DEMARRER_PARTIE" -> {
-                lancerPartie();
-            }
+            case "@DEMARRER_PARTIE" -> lancerPartie();
             case "@CARTE_JOUEE" -> carteJouer(message);
             case "@FIN_TOUR" -> finTour();
             case "@PIOCHE" -> pioche();
@@ -126,107 +133,207 @@ public class Utilisateur {
             case "@MAIN" -> carteEnMain();
             case"@CARTE_TAS" -> carteAJOUER();
             case "@AQUILETOUR" -> tourDe();
+            case "@JOUEURS" -> afficherTour();
             default -> System.err.println("Ce type de message nexiste pas : " + typeMessage);
 
         }
     }
+
+    /**
+     * donc la onfait appel a la focntion de la partie metier pour retrouver le jouers courant
+     * puis recupere son nom et nombre de carte en main on envoie le protocole @AUTRES pour afficher
+     * donc le jouers courant et le dos de ses carte donc 7 carte 7 carte retournes et cela au niveau de l'interface
+     * @throws IOException
+     */
+    public void afficherTour() throws IOException {
+        StringBuilder sb = new StringBuilder();
+
+        Joueur j = serveur.getPartiedejeu().joueurCourant();
+        sb.append(j.getNom()).append(":").append(j.getNbCarteEnMain());
+
+        System.out.println(sb.toString());
+        serveur.diffuserMessage("@AUTRES " + sb.toString());
+    }
+
+    /**
+     * on fait appel a cet fonction au niveau de la methode fin tour comme ca a chaque foi qun joeurs fini son tour
+     * on envoie les jeours et leurs nombre de carte
+     * @throws IOException
+     */
+  public void joueursDeLapartie() throws IOException {
+
+        StringBuilder sb = new StringBuilder();
+
+        for (Joueur j : serveur.getPartiedejeu().getJoueursDelaPartie()) {
+            sb.append(j.getNom()).append(" : ").append(j.getCrtEnMain().size()).append(" ; ");
+        }
+        if (sb.charAt(sb.length() - 1) == ';') {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        System.out.println(sb.toString());
+
+        serveur.diffuserMessage("@INFO Joueurs de la partie : " + sb.toString());
+    }
+
+    /**
+     * on verifie que on bien plus de 2 joeurs et moins de 10 ; puis on cree une nouvelle partie on l'eregistre
+     * dans le serveur puis on rajoute les utilisateurs en tant que jouers on increment le nombre de partie de chaque
+     * joeurs dans la BD puis on envoie un protocole @LANCER a tout les jouers pour leurs changer de scene
+     */
     public void lancerPartie() {
         // on verifie qu'il ya au minimum 2 joueurs
-        ArrayList<Joueur> joueurs = new ArrayList<>();
-        for (Utilisateur u : serveur.users) {
-            Joueur j = new Joueur(u.getPseudo());
-            joueurs.add(j);
-        }
-        Partiedejeu nvPartie = new Partiedejeu();
-        nvPartie.initialiserPartie(joueurs);     // ✅ c’est ici qu’on fait la vraie initialisation
-        serveur.setPartiedejeu(nvPartie);                 // très bien
-        serveur.setPartieEnCour(true);
-        serveur.diffuserMessage( "que la fete commence");
-        serveur.messagePublic(this,"@DEMARRER_PARTIE");
-        appClient.changerScene();
-        //serveur.diffuserMessage("@LANCER_SCENE_JEU");
-
-    }
-    public String tourDe(){
-        Joueur j = serveur.getPartiedejeu().joueurCourant();
-        threadConnexion.envoyerMessageAuClient("TOUR DE " +j);
-        return "";
-    }
-    public String carteEnMain(){
-        List<Carte> main = serveur.getPartiedejeu().getMainDe(this.pseudo);
-
-        System.out.println("Main de " + this.pseudo + " : " + main);
-        for (Carte c : main) {
-            threadConnexion.envoyerMessageAuClient("@CARTE" + c.toString());
-        }
-
-        return "";
-    }
-    public void carteAJOUER(){
-            Carte c = serveur.getPartiedejeu().carteDuTas();
-            threadConnexion.envoyerMessageAuClient("@CARTE" + c.toString());
-    }
-    /*public void lancerPartie() {
-        // on verifie qu'il ya au minimum 2 joueurs
-        if (serveur.getUtilisateurs() < 1) {
-            threadConnexion.envoyerMessageAuClient("@ERROR il faut au minimum 2 joueurs pour lancer la partie ");
+        if (serveur.getNbUsers() < 2 || serveur.getNbUsers() > 10 ){
+            threadConnexion.envoyerMessageAuClient("@ERROR faut au min 2 joueurs et au max 10 ");
             return;
         }
         ArrayList<Joueur> joueurs = new ArrayList<>();
         for (Utilisateur u : serveur.users) {
             Joueur j = new Joueur(u.getPseudo());
             joueurs.add(j);
+        }for (Utilisateur joueur : serveur.users) {
+            UtilisateurDAO.incrementerNombreParties(joueur.getPseudo());
         }
-        //partieEnCour = true;
-        partie.initialiserJoueurs(joueurs);
-    }*/
+        Partiedejeu nvPartie = new Partiedejeu();
+        nvPartie.initialiserPartie(joueurs);
+        serveur.setPartiedejeu(nvPartie);
+        serveur.setPartieEnCour(true);
+        serveur.messagePublic(this," Que la fête commence ");
+        serveur.diffuserMessage("@LANCER");
+    }
+
+    /**
+     * renvoie le nom du joeurs courant
+     * @return
+     */
+    public String tourDe(){
+        Joueur j = serveur.getPartiedejeu().joueurCourant();
+        serveur.diffuserMessage("@INFO Tour du joueur : " + j);
+        return "";
+    }
+
+    /**
+     * donc on recupere les cartes du joeurs ou du client et on en enregistre les valeurs de ses cartes
+     * et on envoie un Protocole @CRTENMAIN qu'on utilisera du cote client pour recuperer donc les valeurs de
+     * chauqe carte et les transformer en photo
+     * @return
+     */
+    public String carteEnMain() {
+        List<Carte> main = serveur.getPartiedejeu().getMainDe(this.pseudo);
+
+        StringBuilder sb = new StringBuilder();
+
+        for (Carte c : main) {
+            sb.append(c.getValeur()).append("_").append(c.getCouleur()).append(";");
+        }
+        if (!main.isEmpty()) {
+            sb.setLength(sb.length() - 1);
+        }
+
+        threadConnexion.envoyerMessageAuClient("@CRTENMAIN " + sb.toString());
+
+        return "";
+    }
+
+    /**
+     * on recupere la carte du tas et on l'envoie au client pour afficher la carte sous forme d'image
+     */
+    public void carteAJOUER(){
+        Carte c = serveur.getPartiedejeu().carteDuTas();
+        StringBuilder sb = new StringBuilder();
+        sb.append(c.getValeur()).append("_").append(c.getCouleur());
+        serveur.diffuserMessage("@DEFAUSSE " + sb.toString());
+    }
+    /**
+     * envoie un message que le jouerus a dit UNO et on met le boolean de la partie metier a vrai
+     * puis la verification se fera dans fin tour selon la logique de notre partie metier
+     */
     public void uno(){
         Joueur j = serveur.getPartiedejeu().getJoueurDepuisPseudo(this.pseudo);
-        j.DireUno(partie);
-        serveur.messagePublic(this,"UNOOOOOOOOOO!!!!");
+        j.DireUno(serveur.getPartiedejeu());
+        serveur.diffuserMessage("@INFO " + this.pseudo + " a dit UNO ");
     }
+
+    /**
+     * donc la le joueurs encaisse l'attaque et envoie un message que le joeurs a bien encaisser l'attaque
+     */
     public void encaisse(){
-        int nb = serveur.getPartiedejeu().encaisserAttaque();
-        serveur.messagePublic(this,"j'ai encaisser l'attaque" +nb );
+        try {
+            int nb = serveur.getPartiedejeu().encaisserAttaque();
+            serveur.diffuserMessage("@INFO " + this.pseudo + " a encaisser l'attaque de " + nb + " carte");
+            serveur.diffuserMessage("@MAJ");
+        } catch (PartieException e) {
+            serveur.diffuserMessage("@EXCEPTION " + e.getMessage());
+        }
     }
+
+    /**
+     * la on fait appel a la fonction de laprtie metier on verifie que le joeurs a bien le droit de piocher
+     * si c'est le cas on envoie le message que le jeours x a piocher une carte ET AU jouerus qui
+     * a piocher un message que la carte X a ete ajouter a votre main et on met ajour l'affichage
+     */
+    public void pioche(){
+        try {
+            Joueur j = serveur.getPartiedejeu().getJoueurDepuisPseudo(this.pseudo);
+            Carte c = serveur.getPartiedejeu().piocherUneCarte(j);
+            serveur.diffuserMessage("@INFO " + this.pseudo + " a piocher une carte") ;
+            threadConnexion.envoyerMessageAuClient("@INFO la carte " + c + " a ete ajouter a votre main");
+            threadConnexion.envoyerMessageAuClient("@MAJ ");
+        }catch (PiocheException e){
+            threadConnexion.envoyerMessageAuClient("@EXCEPTION " + e.getMessage());
+            serveur.diffuserMessage("@MAJ " + e.getMessage());
+        }
+    }
+
+    /**
+     * on fait appel a la nouvelle fonction qu'on creer pour retourver le jouers grace a une chaine de caraccter
+     *dans ce cas il s'agut du pseudo; on fait appel a la fonction de la partie metier on fait les verifiactions
+     * que la partie n'est pas terminer donc le boolean finmanche dans la classe metier n'est pas vrai si la partie est
+     * fini on enregistre le joueurs gagnant et on incremnet le nombre de victoire de ce joeuru dans la BD et on
+     * envoie @FIN pour lancer la scne de fin de jeu ;
+     * sinon on passe au jouerus suivant .
+     */
     public void finTour() {
         try {
             Joueur joueur = serveur.getPartiedejeu().getJoueurDepuisPseudo(this.pseudo);
             if (joueur == null) {
-                threadConnexion.envoyerMessageAuClient("@ERROR Joueur introuvable.");
+                threadConnexion.envoyerMessageAuClient("@EXCEPTION Joueur introuvable.");
                 return;
             }
 
             serveur.getPartiedejeu().finirTourDe(joueur);
             if (serveur.getPartiedejeu().isFinManche()){
-                serveur.diffuserMessage("La partie est terminer ");
-                serveur.diffuserMessage("le vainquer est "  + serveur.getPartiedejeu().getVainqueur());
+                serveur.diffuserMessage("@INFO La partie est terminer ");
+                serveur.diffuserMessage("@FIN " + pseudo);
+                UtilisateurDAO.incrementerVictoire(pseudo);
+                serveur.setPartieEnCour(false);
                 return;
             }
-            serveur.messagePublic(this, "a terminé son tour.");
+            serveur.diffuserMessage("@INFO " + this.pseudo + " a fini son tour");
             threadConnexion.envoyerMessageAuClient(carteEnMain());
             serveur.diffuserMessage(serveur.getPartiedejeu().messageListeJoueurs());
             serveur.diffuserMessage(tourDe());
+            carteAJOUER();
+            joueursDeLapartie();
         } catch (PartieException | UnoException e) {
-            threadConnexion.envoyerMessageAuClient("@ERROR " + e.getMessage());
+            threadConnexion.envoyerMessageAuClient("@EXCEPTION " + e.getMessage());
+            serveur.diffuserMessage("@MAJ " + e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
-    public void pioche(){
-        try {
-            Joueur j = serveur.getPartiedejeu().getJoueurDepuisPseudo(this.pseudo);
-            Carte c = serveur.getPartiedejeu().piocherUneCarte(j);
-            serveur.messagePublic(this, "j'ai pioche une carte");
-            threadConnexion.envoyerMessageAuClient("la carte " + c + "a ete ajouter a vitre main");
-        }catch (PiocheException e){
-            threadConnexion.envoyerMessageAuClient("@ERROR" + e.getMessage());
-        }
-        }
+    /**
+     * on lit la carte jouer ex: DEUX VERT selon le protocole on verifie que le format est respecter
+     * on caste le message sous forme de carte donc valeur et couleur et on fait appel a la fonction jouer
+     * de la partie metier pour verifie la logique ainisi le serveur envoie MAJ pour mettre a jour l'affichage
+     * au niveau de l interface et un message pour dire que le joueur X a jouer la carte X
+     * @param message
+     */
     public void carteJouer(String message) {
         try {
             String Carte = message.substring(13);
             String[] partie = Carte.split(" ");
             if (partie.length != 2) {
-                threadConnexion.envoyerMessageAuClient("@ERROR Format de carte incorrect ");
+                threadConnexion.envoyerMessageAuClient("@EXCEPTION Format de carte incorrect ");
                 return;
             }
             String valeur = partie[0];
@@ -234,9 +341,11 @@ public class Utilisateur {
             Carte carte = new Carte(Metier.LogiqueDeJeu.Carte.eValeur.valueOf(valeur.toUpperCase()),
                     Metier.LogiqueDeJeu.Carte.eCouleur.valueOf(couleur.toUpperCase()));
             serveur.getPartiedejeu().jouer(carte);
-            serveur.messagePublic(this, "j'ai jouer la" + carte);
+            serveur.diffuserMessage("@INFO " + this.pseudo + " a jouer la carte " +carte);
+            threadConnexion.envoyerMessageAuClient("@MAJ ");
         } catch (PartieException | IllegalArgumentException e) {
-            threadConnexion.envoyerMessageAuClient("@ERROR" + e.getMessage());
+            threadConnexion.envoyerMessageAuClient("@EXCEPTION " + e.getMessage());
+            serveur.diffuserMessage("@MAJ " + e.getMessage());
         }
     }
     private void traiterMP_TO(String message) {
@@ -270,6 +379,10 @@ public class Utilisateur {
         Pattern pattern = Pattern.compile(phrase, Pattern.CASE_INSENSITIVE);
         return pattern.matcher(message).matches();
     }
+    /**
+     * Gère la connexion d’un joueur : vérifie le pseudo,
+     * empêche la connexion en cours de partie, et ajoute l’utilisateur à la base de donnees »
+     */
     public void traiterConnexion(String message) {
         String[] mots = message.split(" ");
 
@@ -296,22 +409,16 @@ public class Utilisateur {
             this.valide = true;
             threadConnexion.envoyerMessageAuClient("@OK Bienvenue " + pseudo + " ! ");
             UtilisateurDAO.ajouterUtilisateur(pseudo);
-            //BdUno.ajouterJoueur(pseudo);
-            //serveur.add(this);
-            //serveur.messagePublic(this ,pseudo+ " a rejoint le serveur" );
+
+            serveur.messagePublic(this ,pseudo+ " a rejoint le serveur" );
         }
-       /* if (serveur.present(pseudo)) {
-            threadConnexion.envoyerMessageAuClient("@ERROR Ce pseudo est déjà utilisé.");
-            return;
-        }*/
-        serveur.diffuserMessage( pseudo + " a rejoint le serveur" );
     }
     private void traiterDeconnexion() {
         try {
-            this.serveur.messagePublic(this, "Je suis parti"); // Notifie les autres
+            this.serveur.messagePublic(this, "Je suis parti");
             this.socket.close();
             this.serveur.remove(this);
-            this.threadConnexion.fin();// Retire de la liste du serveur
+            this.threadConnexion.fin();
         } catch (ServeurExceptions | IOException e) {
             throw new RuntimeException("Erreur lors de la déconnexion de l'utilisateur : " + pseudo, e);
         }

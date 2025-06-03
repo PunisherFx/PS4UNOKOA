@@ -1,0 +1,45 @@
+/* Style global */
+.root {
+    -fx-font-family: "Segoe UI", "Arial";
+    -fx-alignment: center;
+}
+
+/* Titre principal */
+#titre {
+    -fx-font-size: 38px;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-color: transparent;
+    -fx-effect: dropshadow(gaussian, black, 8, 0.4, 2, 2);
+}
+
+/* Label du vainqueur */
+#vainqueur {
+    -fx-font-size: 22px;
+    -fx-text-fill: white;
+    -fx-padding: 10 25;
+    -fx-background-color: rgba(0, 0, 0, 0.4);
+    -fx-background-radius: 25;
+    -fx-effect: dropshadow(gaussian, black, 4, 0.3, 1, 1);
+}
+
+/* Boutons */
+.button {
+    -fx-background-color: linear-gradient(to bottom, #ffe600, #ff6a00);
+    -fx-text-fill: black;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 25;
+    -fx-background-radius: 30;
+    -fx-border-radius: 30;
+    -fx-border-color: black;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, black, 4, 0.2, 1, 1);
+}
+
+.button:hover {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #ffc400);
+    -fx-scale-x: 1.08;
+    -fx-scale-y: 1.08;
+}

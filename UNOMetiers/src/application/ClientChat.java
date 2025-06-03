@@ -1,5 +1,6 @@
 package application;
 
+import Metier.LogiqueDeJeu.Joueur;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
@@ -21,13 +22,28 @@ import java.util.Arrays;
 public class ClientChat {
     private static final String SERVEUR = "localhost";
     private static final int PORT = 4567;
-
-    AppClient app; // utile pour accéder à la méthode afficherConsole
+    private SceneJeuController sceneJeu;
+    AppClient app;
     private ThreadConsole threadConsole; // gère la récepotion des messages du serveur
     private Socket socket; // La connexion
     private PrintWriter out; // Le flux vers le serveur (le flux d'entrée est unqiement utile dans le thread)
     private String pseudo; // Le pseudo de ce client
 
+    public AppClient getApp() {
+        return this.app;
+    }
+
+    public void setSceneJeuController(SceneJeuController controller) {
+        this.sceneJeu = controller;
+    }
+    public String getPseudo() {
+        return this.pseudo;
+    }
+
+    /**
+     * pour se connecter au serveur
+     * @param appClient
+     */
     public ClientChat(AppClient appClient) {
         this.app = appClient;
         // TODO A vous d'initialiser ce qu'il faut...
@@ -48,33 +64,104 @@ public class ClientChat {
 
     /**
      * La méthode afficherMessage est appelée par le threadConsole lorsqu'un message a été reçu du serveur.
-     * Il faut savoir quel est le type du message pour éventuellement l'afficher d'une certaine manière dans
-     * l'interface (dans cette application, tout s'affiche dans la console mais on pourrait imaginer une
-     * fenêtre pour les messages publics, une autre pour les messages privés et encore une autre pour les
-     * erreurs, etc.)
-     *
+     * on somme dans la classe utilisateur la fonction diffuser lmessage et envoyer message au client
+     * envoie des protocoles c'est ou on les detcte pour faire ce quil faut au niveau de l'interface
      * @param message Le message reçu du serveur
      */
     public void afficherMessage(String message) {
         System.out.println("📨 Message reçu : " + message);
         String[] mots = message.split(" ");
         switch (mots[0]) {
-            case "@PUBLIC_FROM" -> afficherMessagePublic(mots);
+            case "@PUBLIC_FROM" -> {
+                afficherMessagePublic(mots);
+            }
             case "@MP_FROM" -> afficherMessagePrive(mots);
-            case "@ERROR" -> afficherErreur(mots);
-            case "@INFO" -> diffuserMessage(mots);
-            case "@DEMARRER_PARTIE" -> app.changerScene();
-
+            case "@TOURDE" ->{
+                /**
+                 * afficher dans la console le tour du joeurs courant
+                 */
+                sceneJeu.afficherConsole(message);
+            }
+            case "@ERROR" ->{
+                /**
+                 * on l'utilise que dans le minochat
+                 */
+                afficherErreur(mots);
+            }
+            case "@INFO" -> Platform.runLater(() -> {
+                String msg = message.substring("@INFO".length());
+                 sceneJeu.afficherConsole(msg);
+            });
+            case "@LANCER" -> javafx.application.Platform.runLater(() -> {
+                /**
+                 * donc la lorsque on envoie demarrer partie le serveru renvoie @LANCER et la on fait appel a la fonction
+                 * pour changer de scen et afficher la scen du jeu
+                 */
+                app.changerScene();
+            });
+            case "@CRTENMAIN" -> {
+                /**
+                 * afficher les cartes en lain de chaque joeurs
+                 */
+                String donnees = message.substring("@CRTENMAIN ".length());
+                Platform.runLater(() -> sceneJeu.ajouterCarteDansMain(donnees));
+                return;
+            }
+            /**
+             * AUTRES pour afficher le jouers courant et ses cartes retournes
+             */
+            case "@AUTRES" -> Platform.runLater(() -> sceneJeu.afficherJoueurs(message));
+            /**
+             * la on utilisera pour afficher les exception our les erruers mais quand dans la console
+             * du jeu et non dans le mini chat
+             */
+            case"@EXCEPTION" ->{
+                String msg = message.substring("@EXCEPTION ".length());
+                Platform.runLater(() -> sceneJeu.afficherConsole(msg));
+            }
+            /**
+             * pour charger la scne de fin du jeu et on stocje le joeurs gagnat recu de servvr dans gagnat du controleur
+             */
+            case"@FIN" ->{
+                String msg = message.substring("@FIN ".length());
+                Platform.runLater(() -> sceneJeu.setGagnant(msg));
+                Platform.runLater(() ->  sceneJeu.changerSceneFin());
+                return;
+            }
+            /**
+             * mettre  a jour l'affichage
+             */
+            case "@MAJ" -> Platform.runLater(() -> sceneJeu.miseajour());
+            /**
+             * dans la snce de fin de jeu on affiche le vainquer precedemment stocker dans le servuer
+             */
+            case "@VAINQUEUR" -> {
+                String donnees = message.substring("@VAINQUEUR".length());
+                Platform.runLater(() -> sceneJeu.setGagnant(donnees));
+                return;
+            }
+            /**
+             * afficher la carte du tas
+             */
+            case"@DEFAUSSE" ->{
+                String donnees = message.substring("@DEFAUSSE ".length());
+                Platform.runLater(() -> sceneJeu.ajouterCarteTas(donnees));
+                return;
+            }
         }
     }
-    public void diffuserMessage(String[] mots) {
-        String str = mots[1] + " : " + getContenu(Arrays.copyOfRange(mots, 1, mots.length));
-        app.afficherConsole(str);
+    public void messageauserveur(String message) {
+        out.println(message);
+        out.flush();
     }
+
+    /**
+     * on envoi vers le serveur @De.. pour lancer une nouvelle partie on soit c'est le serveur qui lance la partie
+     * verifie que tout est nickel puis le serveur renvoie un autres ortocle pour charger la scene
+     */
     public void lancerUnePartie() {
                 out.println("@DEMARRER_PARTIE");
                 out.flush();
-                app.changerScene();
     }
     private void afficherMessagePrive(String[] mots) {
         String str = "**" + mots[1] + "** : " + getContenu(Arrays.copyOfRange(mots, 2, mots.length));

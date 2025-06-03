@@ -6,7 +6,10 @@ import serveur.serveurMetier.ServeurUno;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-
+/**
+Cette classe représente le thread qui écoute les nouvelles connexions clientes sur le serveur.
+Elle tourne en boucle et accepte chaque client qui se connecte
+ */
 public class ThreadAcceptConnexion extends Thread{
     private ServeurUno serveur;
     private ServerSocket serverSocket;

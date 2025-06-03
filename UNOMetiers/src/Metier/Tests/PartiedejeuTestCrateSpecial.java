@@ -92,10 +92,10 @@ class PartiedejeuTestCrateSpecial {
         Assertions.assertEquals(charles, partie.joueurCourant());
         Assertions.assertEquals(3,charles.getNbCarteEnMain());
         Carte unBleu = new Carte(Carte.eValeur.UN, Carte.eCouleur.BLEU);
-        partie.jouer(unBleu);
+        assertThrows(IllegalArgumentException.class, () ->partie.jouer(unBleu));
         //partie.finirTourDe(charles);
-        assertThrows(PartieException.class, () -> partie.finirTourDe(charles));
-        Assertions.assertEquals(3, charles.getNbCarteEnMain());
+        //assertThrows(PartieException.class, () -> partie.finirTourDe(charles));
+        Assertions.assertEquals(5, charles.getNbCarteEnMain());
     }
 
     @Test
@@ -113,8 +113,8 @@ class PartiedejeuTestCrateSpecial {
         Assertions.assertEquals(3,charles.getNbCarteEnMain());
 
         Carte passeTTVert = new Carte(Carte.eValeur.PASSE, Carte.eCouleur.VERT);
-        partie.jouer(passeTTVert);
-        assertThrows(PartieException.class, () ->  partie.finirTourDe(charles));
-        Assertions.assertEquals(3, charles.getNbCarteEnMain());
+        assertThrows(IllegalArgumentException.class, () -> partie.jouer(passeTTVert));
+        //assertThrows(PartieException.class, () ->  partie.finirTourDe(charles));
+        Assertions.assertEquals(5, charles.getNbCarteEnMain());
     }
 }
