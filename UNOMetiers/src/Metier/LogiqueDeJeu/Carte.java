@@ -46,24 +46,22 @@ public class Carte {
                 ", couleur=" + couleur +
                 '}';
     }
+    /* on cree les cartes du jeu selon les regles officiels sauf les cartes joker changment de couleur
+     */
     public static ArrayList<Carte> initialiserCarteDuJeu() {
         ArrayList<Carte> cartes = new ArrayList<>();
 
         for (eCouleur couleur : eCouleur.values()) {
             if (couleur == eCouleur.NOIR) continue;
 
-            // 1 ZERO
             cartes.add(new Carte(eValeur.ZERO, couleur));
 
-            // 2 cartes pour 1 à 9
             for (eValeur v : List.of(
                     eValeur.UN, eValeur.DEUX, eValeur.TROIS, eValeur.QUATRE, eValeur.CINQ,
                     eValeur.SIX, eValeur.SEPT, eValeur.HUIT, eValeur.NEUF)) {
                 cartes.add(new Carte(v, couleur));
                 cartes.add(new Carte(v, couleur));
             }
-
-            // Cartes spéciales x2
             cartes.add(new Carte(eValeur.PLUS_2, couleur));
             cartes.add(new Carte(eValeur.PLUS_2, couleur));
             cartes.add(new Carte(eValeur.CHANGEMENT_SENS, couleur));
@@ -71,21 +69,10 @@ public class Carte {
             cartes.add(new Carte(eValeur.PASSE, couleur));
             cartes.add(new Carte(eValeur.PASSE, couleur));
         }
-
-        // Cartes noires (spéciales)
         for (int i = 0; i < 4; i++) {
-            cartes.add(new Carte(eValeur.CHANGEMENT_COULEUR , eCouleur.NOIR));
             cartes.add(new Carte(eValeur.PLUS_4, eCouleur.NOIR));
         }
-
-        // Mélanger aléatoirement
         Collections.shuffle(cartes);
         return cartes;
     }
-    public static Image getImageFromCarte(Carte carte) {
-        String nomFichier = carte.getValeur() + "_" + carte.getCouleur() + ".png";
-        String chemin = "/" + nomFichier;
-        return new Image(Carte.class.getResourceAsStream(chemin));
-    }
-
 }
