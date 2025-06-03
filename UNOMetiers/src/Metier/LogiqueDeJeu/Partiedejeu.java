@@ -28,6 +28,9 @@ public class Partiedejeu {
 
     public Partiedejeu() {
     }
+    public ArrayList<Joueur> getJoueursDelaPartie() {
+        return joueursDelaPartie;
+    }
 
     public Joueur getVainqueur() {
         return vainqueur;
