@@ -26,14 +26,6 @@ public class Defausse {
             throw new IllegalArgumentException("aucune carte sur le Tas");
         }
     }
-    // pour gerer le test d'une carte simple illégale sur un passeTT
-    public Carte avantDerniéreCarteJouer(Carte c){
-        if (tas.size() >= 2) {
-            return tas.get(tas.size()-2);
-        }else {
-            throw new IllegalArgumentException("Pas de carte ");
-        }
-    }
     public void reinitialiserTas (){
         tas.clear();
     }
