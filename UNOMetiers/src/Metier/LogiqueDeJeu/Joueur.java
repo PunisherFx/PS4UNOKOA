@@ -47,19 +47,11 @@ public class Joueur {
 
 
     }
-    /*public Carte piocherUneCarte(Pioche pioche) throws PiocheException {
-        Carte c = pioche.depiler();
-        cartesEnMain.add(c);
-        return c;
-    }*/
     //on ajoute une carte au joueur
     public void ajouterUneCarte(Carte carte) {
         cartesEnMain.add(carte);
     }
-    /*public boolean UNO (){
-        if (cartesEnMain.size()==1) return true;
-        return false;
-    }*/
+
 // on retourne vrai si le joeurs a dit UNO encore une fois le test si il a une carte etc.. se fera dans Partie
     public boolean isaDitUno() {
         return aDitUno;
@@ -85,24 +77,6 @@ public class Joueur {
     public void finirSonTour(Partiedejeu partie) {
         partie.finirTourDe(this);
     }
-   /* public Carte.eCouleur choisirCouleur() {
-        Scanner scanner = new Scanner(System.in);
-        Carte.eCouleur[] couleurs = Carte.eCouleur.values();
-
-        System.out.println(nom + ", choisissez une couleur :");
-        for (int i = 0; i < couleurs.length; i++) {
-            System.out.println(i + " - " + couleurs[i]);
-        }
-
-        int choix;
-        do {
-            System.out.print("Entrez le numéro de la couleur : ");
-            choix = scanner.nextInt();
-        } while (choix < 0 || choix >= couleurs.length);
-
-        return couleurs[choix];
-    }*/
-
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Joueur joueur)) return false;
@@ -111,8 +85,9 @@ public class Joueur {
 
     @Override
     public String toString() {
+        int nb = getNbCarteEnMain();
         return "Joueur{" +
-                "nom='" + nom + '\'' +
+                "nom='" + nom + '\'' + "Carte= " + nb +
                 '}';
     }
 
