@@ -3,8 +3,11 @@ package Metier.LogiqueDeJeu;
 import Metier.Exceptions.PartieException;
 import Metier.Exceptions.PiocheException;
 import Metier.Exceptions.UnoException;
+import serveur.reseau.ThreadConnexion;
+import serveur.reseau.Utilisateur;
 import serveur.serveurMetier.ServeurUno;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,9 +25,7 @@ public class Partiedejeu {
     private int compteurCarteSpe = 1 ;
     private boolean finManche;
     private Joueur vainqueur;
-    private Carte carte;
-    private ArrayList<Carte> carteDuJeu = new ArrayList<>();
-   //ti private ServeurUno serveur;
+
 
     public Partiedejeu() {
     }
@@ -68,7 +69,12 @@ public class Partiedejeu {
     public boolean isFinManche() {
         return finManche;
     }
-
+/*
+dans cette methode on initalise une partie on lui fera appel depuis le serveur on vide la liste des joueurs par precaution
+pour ajouter les utilisateurs ensuite on itilise le sens du jeu ; on ajoute toutes les carte creer dans Carte dans la pioche
+puis ensuite pour chauqe jouers on lui donne 7 cartes on depilant la pioche on pose une carte sur le tas a condition quelle ne soit
+pas speciale
+ */
     public void initialiserPartie(ArrayList<Joueur> joueurs) {
         if (joueurs==null) throw new IllegalArgumentException("liste est vide pour initialiser la main");
         joueursDelaPartie.clear();
@@ -85,7 +91,11 @@ public class Partiedejeu {
         }
         this.tas = new Defausse();
         this.tas.poserUneCarte(this.pioche.depiler());
-
+        Carte carteJeu = tas.carteAJouer();
+        if (carteJeu.getValeur() == Carte.eValeur.CHANGEMENT_SENS || carteJeu.getValeur() == Carte.eValeur.PLUS_2 ||
+        carteJeu.getValeur() == Carte.eValeur.PLUS_4 || carteJeu.getValeur() == Carte.eValeur.PASSE){
+            this.tas.poserUneCarte(this.pioche.depiler());
+        }
     }
     public Joueur joueurCourant() {
         if (indiceDuJoueurCourant >= 0 && indiceDuJoueurCourant < joueursDelaPartie.size()) {
@@ -112,7 +122,7 @@ public class Partiedejeu {
         if (finManche) {
             throw new PartieException("la manche est fini");
         }
-        if (tourCourant == false) {
+        if (!tourCourant) {
             throw new PartieException("Vous n'avez pas le droit de jouer");
         }
         Joueur j = joueurCourant();
@@ -120,7 +130,7 @@ public class Partiedejeu {
         if (effetPlus2 ){
             if (j.aLaCarte(c) && c.getValeur()== Carte.eValeur.PLUS_2){
                 compteurCarteSpe++;
-                effetPlus2 = false;
+                effetPlus2 = true;
             }else {
                 encaisserAttaque();
                 throw new PartieException("Vous ne pouvez pas jouer; vous avez subi une attaque 2 carte de la pioche en etaient ajoutees ");
@@ -129,31 +139,46 @@ public class Partiedejeu {
         if(effetPlus4){
             if (j.aLaCarte(c) && c.getValeur()== Carte.eValeur.PLUS_4){
                 compteurCarteSpe++;
-                effetPlus4 = false;
+                effetPlus4 = true;
             }else {
                 encaisserAttaque();
-                throw new PartieException("Vous ne pouvez pas jouer; vous avez subi une attaque 2 carte de la pioche en etaient ajoutees ");
+                throw new PartieException("Vous ne pouvez pas jouer; vous avez subi une attaque 4 carte de la pioche en etaient ajoutees ");
             }
         }
         if (j.aLaCarte(c)) {
             if ((c.getValeur() == carteJeu.getValeur()) || (c.getCouleur() == (carteJeu.getCouleur()))) {
-                j.jouerCarte(c);
-                tas.poserUneCarte(c);
-                aFaitUneAction = true;
-                tourCourant = false;
-               // serveur.diffuserMessage("carte jouer" +c);
-            }else {
-                if (carteJeu.getValeur() == Carte.eValeur.PASSE){
+                if (c.getValeur() == Carte.eValeur.PASSE) {
                     aFaitUneAction = true;
                     tourCourant = false;
                     controleDeCartePasseTT = true;
-                   // tas.poserUneCarte(c);
-                }else if (c.getValeur() == Carte.eValeur.PASSE){
+                    j.jouerCarte(c);
+                    tas.poserUneCarte(c);
+                }else if (c.getValeur() == Carte.eValeur.PLUS_2) {
                     aFaitUneAction = true;
                     tourCourant = false;
-                    controleDeCartePasseTT = true;
+                    effetPlus2 = true;
+                    j.jouerCarte(c);
+                    tas.poserUneCarte(c);
+                }else {
+                    j.jouerCarte(c);
+                    tas.poserUneCarte(c);
+                    aFaitUneAction = true;
+                    tourCourant = false;
                 }
-                else{
+            }else {
+                if(c.getValeur() == Carte.eValeur.PLUS_4){
+                    j.jouerCarte(c);
+                    tas.poserUneCarte(c);
+                    aFaitUneAction = true;
+                    tourCourant = false;
+                    effetPlus4 = true;
+            } else if (carteJeu.getValeur() == Carte.eValeur.PLUS_4) {
+                    j.jouerCarte(c);
+                    tas.poserUneCarte(c);
+                    aFaitUneAction = true;
+                    tourCourant = false;
+
+                } else{
                 punir(joueurCourant());
                 throw new IllegalArgumentException("Tu ne peux pas jouer cette carte");
             }
@@ -180,12 +205,6 @@ public class Partiedejeu {
             throw new PartieException("Ce n'est pas à vous de finir le tour !");
         } else if (!aFaitUneAction) {
             throw new PartieException("Vous devez jouer Une carte si vous n'avez pas de carte piochezz");
-        } else if (effetPlus2) {
-                encaisserAttaque();
-            throw new PartieException("Ta encaisser L'attaque +2");
-        } else if (effetPlus4) {
-        encaisserAttaque();
-        throw new PartieException("Ta encaisser L'attaque +4");
         }
         if (joueur.getNbCarteEnMain() == 1 && joueur.isaDitUno()==false) {
             punir(joueur);
@@ -193,22 +212,12 @@ public class Partiedejeu {
             tas.rendreLaCarte();
             throw new UnoException("a oublier de dire UNO");
         }else if (joueur.getNbCarteEnMain() == 1 && joueur.isaDitUno()==true){
-            joueur.setaDitUno(true);
+            joueur.setaDitUno(false);
         }else if (joueur.getNbCarteEnMain() > 1 && joueur.isaDitUno()==true){
             punir(joueur);
             joueur.ajouterUneCarte(c);
             tas.rendreLaCarte();
             throw new UnoException("c'est pas bien de mentir ; vous avez subi une punition +2 et votre carte n'est pas accepter");
-        }
-        if (controleDeCartePasseTT){
-            passeTour();
-            throw new PartieException("pas le droit de jouer cette carte vous ne serez pas penaliser,mais votre tour est fini");
-        }
-        if (c.getValeur() == Carte.eValeur.PLUS_2){
-            effetPlus2 = true;
-        }
-        if (c.getValeur() == Carte.eValeur.PLUS_4){
-            effetPlus4 = true;
         }
         if(c.getValeur()== Carte.eValeur.CHANGEMENT_SENS){
             if (sensHoraire){
@@ -243,6 +252,7 @@ public class Partiedejeu {
             ajouterLaCartePioche(j);
             effetPlus2 = false;
             passeTour();
+            throw new PiocheException("Vous ne pouvez pas piocher vous avez subi une attaque ");
         }
         if (effetPlus4){
             ajouterLaCartePioche(j);
@@ -251,6 +261,7 @@ public class Partiedejeu {
             ajouterLaCartePioche(j);
             effetPlus4 = false;
             passeTour();
+            throw new PiocheException("Vous ne pouvez pas piocher vous avez subi une attaque ");
         }
         if (aFaitUneAction){
             Carte c = tas.carteAJouer();
@@ -309,7 +320,7 @@ public class Partiedejeu {
              passeTour();
              return nb;
          }
-         return 0;
+         throw new PartieException("aucune attaque n'est en cour");
          }
     public List<Carte> getMainDe(String pseudo) {
         for (Joueur j : joueursDelaPartie) {
@@ -322,7 +333,7 @@ public class Partiedejeu {
     public Carte carteDuTas(){
         return  tas.carteAJouer();
     }
-    /* cette methode consiste a trouve un jouers a partir de son pseudo */
+    /* cette methode consiste a trouve un joueur a partir de son pseudo on l'utilisera depuis le serveur  */
     public Joueur getJoueurDepuisPseudo(String pseudo) {
         for (Joueur j : joueursDelaPartie) {
             if (j.getNom().equals(pseudo)) {
