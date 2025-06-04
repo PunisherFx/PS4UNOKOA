@@ -338,7 +338,10 @@ pas speciale
         return sb.toString();
     }
 
-    public void regenererPiocheDepuisTas() {
+    /**
+     * cet fonction on prend toutes les cartes sauf la derneirs on les ajoutes dans la pioche
+     */
+    public void transormerTasEnPioche() {
         // On garde la dernière carte visible du tas
         Carte derniereCarte = tas.carteAJouer();
         // On enlève cette carte de la défausse temporairement
@@ -351,6 +354,6 @@ pas speciale
         // Et on repose la dernière carte
         tas.poserUneCarte(derniereCarte);
     }
-    
+
 }
 

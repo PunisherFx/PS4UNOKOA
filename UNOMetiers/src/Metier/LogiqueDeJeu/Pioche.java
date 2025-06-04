@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 public class Pioche {
     private ArrayList<Carte> LaPioche =  new ArrayList();
+    private Partiedejeu partie;
 
     public Pioche(ArrayList<Carte> laPioche) {
         LaPioche = laPioche;
@@ -23,7 +24,7 @@ public class Pioche {
     //on retire une carte de la pioche les verifs se feront dans Partie
     public Carte depiler(){
         if (LaPioche.size() == 0 ) {
-            throw  new PiocheException("on ne peut pas piocher d'une pioche vide ");
+            partie.transormerTasEnPioche();
         }
         return LaPioche.remove(LaPioche.size()- 1);
     }
