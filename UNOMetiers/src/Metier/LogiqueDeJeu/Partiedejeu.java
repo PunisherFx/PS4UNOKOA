@@ -9,6 +9,7 @@ import serveur.serveurMetier.ServeurUno;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Partiedejeu {
@@ -164,7 +165,7 @@ pas speciale
 
                 } else{
                 punir(joueurCourant());
-                throw new IllegalArgumentException("Tu ne peux pas jouer cette carte");
+                throw new IllegalArgumentException("Tu ne peux pas jouer cette carte ; t'es puni de 2 carte et on passe ton tour");
             }
             }
         }else {
@@ -337,7 +338,19 @@ pas speciale
         return sb.toString();
     }
 
+    public void regenererPiocheDepuisTas() {
+        // On garde la dernière carte visible du tas
+        Carte derniereCarte = tas.carteAJouer();
+        // On enlève cette carte de la défausse temporairement
+        tas.rendreLaCarte();
 
-
+        ArrayList<Carte> cartesRestantes = new ArrayList<>(tas.getTas());
+        Collections.shuffle(cartesRestantes);
+        pioche.initialiser(cartesRestantes);
+        tas.reinitialiserTas();
+        // Et on repose la dernière carte
+        tas.poserUneCarte(derniereCarte);
+    }
+    
 }
 

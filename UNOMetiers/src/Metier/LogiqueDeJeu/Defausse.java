@@ -19,6 +19,11 @@ public class Defausse {
     public void poserUneCarte(Carte c){
         tas.add(c);
     }
+
+    public List<Carte> getTas() {
+        return tas;
+    }
+
     public Carte carteAJouer(){
         if(!(tas.isEmpty())) {
             return tas.get(tas.size()-1);
