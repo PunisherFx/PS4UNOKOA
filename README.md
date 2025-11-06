@@ -64,12 +64,12 @@ src/
 
 ## ⚙️ Technologies utilisées
 
-- **Langage :** Java 17  
+- **Langage :** Java 17 / JavaFx21.
 - **Architecture :** Client / Serveur  
 - **Communication :** Jeu UNO développé en Java, entièrement jouable en local, sans réseau (telnet pour les connexions au localHost).
 - **Base de données :** JDBC  
 - **Tests unitaires :** JUnit 5  
-- **IDE recommandé :** IntelliJ IDEA ou Eclipse  
+- **IDE recommandé :** IntelliJ IDEA .
 
 
 Auteur
